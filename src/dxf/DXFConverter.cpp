@@ -32,9 +32,11 @@ void DXFConverter::setInput(const std::string &input) { this->m_input = input; }
  * Convert
  * @return Status
  */
-bool DXFConverter::convert() {
+bool DXFConverter::convert()
+{
   auto dxf = std::make_unique<DL_Dxf>();
-  if (!dxf->in(this->m_input, this)) {
+  if (!dxf->in(this->m_input, this))
+  {
     Logger::ERROR("DXFConverter::Unable to open" + this->m_input);
     return false;
   }
@@ -48,19 +50,23 @@ TopoDS_Compound DXFConverter::getCompound() const { return this->m_compound; }
 // dxflib
 
 void DXFConverter::processCodeValuePair(unsigned int code,
-                                        const std::string &value) {
-  if (value == "ENDSEC") {
+                                        const std::string &value)
+{
+  if (value == "ENDSEC")
+  {
     Logger::DEBUG("DXFConverter::ENDSEC");
     // this->buildFace(); // TODO introduce bug, check if needed
   }
 
-  else if (value == "EOF") {
+  else if (value == "EOF")
+  {
     Logger::DEBUG("DXFConverter::EOF");
     this->buildCompound();
   }
 }
 
-void DXFConverter::addLine(const DL_LineData &data) {
+void DXFConverter::addLine(const DL_LineData &data)
+{
   Logger::DEBUG("DXFConverter::LINE");
 
   DL_VertexData v1 = {data.x1, data.y1, 0, 0};
@@ -75,7 +81,8 @@ void DXFConverter::addLine(const DL_LineData &data) {
   this->buildWire();
 }
 
-void DXFConverter::addArc(const DL_ArcData &data) {
+void DXFConverter::addArc(const DL_ArcData &data)
+{
   Logger::DEBUG("DXFConverter::ARC");
 
   gp_Circ circle;
@@ -96,7 +103,8 @@ void DXFConverter::addArc(const DL_ArcData &data) {
   this->m_wires.push_back(wire);
 }
 
-void DXFConverter::addCircle(const DL_CircleData &data) {
+void DXFConverter::addCircle(const DL_CircleData &data)
+{
   Logger::DEBUG("DXFConverter::CIRCLE");
 
   gp_Circ circle;
@@ -113,17 +121,20 @@ void DXFConverter::addCircle(const DL_CircleData &data) {
   this->m_wires.push_back(wire);
 }
 
-void DXFConverter::addPolyline(const DL_PolylineData &data) {
+void DXFConverter::addPolyline(const DL_PolylineData &data)
+{
   Logger::DEBUG("DXFConverter::POLYLINE");
 }
 
-void DXFConverter::addVertex(const DL_VertexData &data) {
+void DXFConverter::addVertex(const DL_VertexData &data)
+{
   Logger::DEBUG("DXFConverter::VERTEX");
 
   this->m_vertices.push_back(data);
 }
 
-void DXFConverter::endEntity() {
+void DXFConverter::endEntity()
+{
   Logger::DEBUG("DXFConverter::END ENTITY");
 
   this->buildWire();
@@ -131,20 +142,23 @@ void DXFConverter::endEntity() {
 
 // occ
 
-void DXFConverter::buildWire() {
+void DXFConverter::buildWire()
+{
   Logger::DEBUG("DXFConverter::buildWire");
 
   auto size = (uint)this->m_vertices.size();
   if (!size)
     return;
 
-  BRepBuilderAPI_MakeWire wireBuilder = BRepBuilderAPI_MakeWire();
-  for (uint i = 0; i < size; ++i) {
+  auto wireBuilder = BRepBuilderAPI_MakeWire();
+  for (uint i = 0; i < size; ++i)
+  {
     DL_VertexData v1 = this->m_vertices[i];
     DL_VertexData v2 = this->m_vertices[(i + 1) % size];
 
     TopoDS_Edge edge;
-    if (v1.bulge != 0.) {
+    if (v1.bulge != 0.)
+    {
       gp_Pnt point1(v1.x, v1.y, 0);
       gp_Pnt point2(v2.x, v2.y, 0);
 
@@ -165,7 +179,9 @@ void DXFConverter::buildWire() {
 
       auto edgeBuilder = BRepBuilderAPI_MakeEdge(edgeGeometry);
       edge = edgeBuilder.Edge();
-    } else {
+    }
+    else
+    {
       gp_Pnt point1(v1.x, v1.y, 0);
       gp_Pnt point2(v2.x, v2.y, 0);
       BRepBuilderAPI_MakeVertex vertexBuilder1(point1);
@@ -173,7 +189,7 @@ void DXFConverter::buildWire() {
       TopoDS_Vertex vertex1 = vertexBuilder1.Vertex();
       TopoDS_Vertex vertex2 = vertexBuilder2.Vertex();
 
-      BRepBuilderAPI_MakeEdge edgeBuilder =
+      auto edgeBuilder =
           BRepBuilderAPI_MakeEdge(vertex1, vertex2);
       edge = edgeBuilder.Edge();
     }
@@ -189,7 +205,8 @@ void DXFConverter::buildWire() {
   this->m_vertices.clear();
 }
 
-void DXFConverter::buildFace() {
+void DXFConverter::buildFace()
+{
   Logger::DEBUG("DXFConverter::buildFace");
 
   auto size = (uint)this->m_wires.size();
@@ -197,9 +214,10 @@ void DXFConverter::buildFace() {
     return;
 
   // Build face
-  BRepBuilderAPI_MakeFace faceBuilder =
+  auto faceBuilder =
       BRepBuilderAPI_MakeFace(this->m_wires.at(0), true);
-  for (uint i = 1; i < size; ++i) {
+  for (uint i = 1; i < size; ++i)
+  {
     TopoDS_Wire wire = this->m_wires[i];
     faceBuilder.Add(wire);
   }
@@ -212,7 +230,8 @@ void DXFConverter::buildFace() {
   this->m_wires.clear();
 }
 
-void DXFConverter::buildCompound() {
+void DXFConverter::buildCompound()
+{
   Logger::DEBUG("DXFConverter::buildCompound");
 
   // Check if wire build needed
@@ -227,7 +246,8 @@ void DXFConverter::buildCompound() {
   // Build group of faces
   BRep_Builder builder;
   builder.MakeCompound(this->m_compound);
-  for (uint i = 0; i < size; ++i) {
+  for (uint i = 0; i < size; ++i)
+  {
     builder.Add(this->m_compound, this->m_faces[i]);
   }
 

@@ -16,7 +16,8 @@ Gmsh::Gmsh() = default;
  * @param {string} fileName File name
  * @returns {boolean} Loading status
  */
-bool Gmsh::load(const std::string &fileName) {
+bool Gmsh::load(const std::string &fileName)
+{
   uint i;
   uint numberOfVertices;
   uint numberOfElements;
@@ -25,7 +26,8 @@ bool Gmsh::load(const std::string &fileName) {
 
   // Read file
   file.open(fileName, std::ios::in);
-  if (!file) {
+  if (!file)
+  {
     Logger::ERROR("Unable to open " + fileName);
     return false;
   }
@@ -36,17 +38,19 @@ bool Gmsh::load(const std::string &fileName) {
     file >> buffer;
 
   file >> numberOfVertices;
-  if (!numberOfVertices) {
+  if (!numberOfVertices)
+  {
     Logger::ERROR("No vertices");
     return false;
   }
 
-  for (i = 0; i < numberOfVertices; ++i) {
+  for (i = 0; i < numberOfVertices; ++i)
+  {
     double x;
     double y;
     double z;
     file >> buffer >> x >> y >> z;
-    Vertex vertex = Vertex(x, y, z);
+    auto vertex = Vertex(x, y, z);
     this->m_vertices.push_back(vertex);
   }
 
@@ -56,12 +60,14 @@ bool Gmsh::load(const std::string &fileName) {
     file >> buffer;
 
   file >> numberOfElements;
-  if (!numberOfElements) {
+  if (!numberOfElements)
+  {
     Logger::ERROR("No elements");
     return false;
   }
 
-  for (i = 0; i < numberOfElements; ++i) {
+  for (i = 0; i < numberOfElements; ++i)
+  {
     uint type;
     uint numberOfLabels;
     uint label;
@@ -71,38 +77,47 @@ bool Gmsh::load(const std::string &fileName) {
     for (uint j = 2; j < numberOfLabels; ++j)
       file >> buffer;
 
-    if (type == 2) { // 3-nodes triangle
+    if (type == 2)
+    { // 3-nodes triangle
       uint index1;
       uint index2;
       uint index3;
       file >> index1 >> index2 >> index3;
-      Triangle triangle = Triangle(--index1, --index2, --index3, label);
+      auto triangle = Triangle(--index1, --index2, --index3, label);
       this->m_triangles.push_back(triangle);
       if (std::find(this->m_triangleLabels.begin(),
                     this->m_triangleLabels.end(),
                     label) == this->m_triangleLabels.end())
         this->m_triangleLabels.push_back(label);
-    } else if (type == 4) { // 4-nodes tetrahedron
+    }
+    else if (type == 4)
+    { // 4-nodes tetrahedron
       uint index1;
       uint index2;
       uint index3;
       uint index4;
       file >> index1 >> index2 >> index3 >> index4;
-      Tetrahedron tetrahedron =
+      auto tetrahedron =
           Tetrahedron(--index1, --index2, --index3, --index4, label);
       this->m_tetrahedra.push_back(tetrahedron);
       if (std::find(this->m_tetrahedronLabels.begin(),
                     this->m_tetrahedronLabels.end(),
                     label) == this->m_tetrahedronLabels.end())
         this->m_tetrahedronLabels.push_back(label);
-    } else if (type == 15) { // 1-node point
+    }
+    else if (type == 15)
+    { // 1-node point
       uint index1;
       file >> index1;
-    } else if (type == 1) { // 2-node line
+    }
+    else if (type == 1)
+    { // 2-node line
       uint index1;
       uint index2;
       file >> index1 >> index2;
-    } else {
+    }
+    else
+    {
       Logger::ERROR("Unsupported type: " + std::to_string(type));
       continue;
     }
@@ -114,14 +129,16 @@ bool Gmsh::load(const std::string &fileName) {
 /**
  * Get volume labels
  */
-std::vector<uint> Gmsh::getVolumeLabels() const {
+std::vector<uint> Gmsh::getVolumeLabels() const
+{
   return this->m_tetrahedronLabels;
 }
 
 /**
  * Get surface labels
  */
-std::vector<uint> Gmsh::getSurfaceLabels() const {
+std::vector<uint> Gmsh::getSurfaceLabels() const
+{
   return this->m_triangleLabels;
 }
 
@@ -130,7 +147,8 @@ std::vector<uint> Gmsh::getSurfaceLabels() const {
  * @param label Label
  * @return Surface
  */
-Surface Gmsh::getSurface(const uint label) const {
+Surface Gmsh::getSurface(const uint label) const
+{
   // Surface triangles & vertices
   std::vector<Triangle> tempSurfaceTriangles;
   std::vector<Triangle> surfaceTriangles;
@@ -138,8 +156,10 @@ Surface Gmsh::getSurface(const uint label) const {
 
   // Surface triangles
   std::for_each(this->m_triangles.begin(), this->m_triangles.end(),
-                [label, &tempSurfaceTriangles](const Triangle triangle) {
-                  if (triangle.Label() == label) {
+                [label, &tempSurfaceTriangles](const Triangle triangle)
+                {
+                  if (triangle.Label() == label)
+                  {
                     tempSurfaceTriangles.push_back(triangle);
                   }
                 });
@@ -149,7 +169,8 @@ Surface Gmsh::getSurface(const uint label) const {
   std::for_each(
       tempSurfaceTriangles.begin(), tempSurfaceTriangles.end(),
       [this, &surfaceVertices, &newIndices,
-       &surfaceTriangles](const Triangle triangle) {
+       &surfaceTriangles](const Triangle triangle)
+      {
         const uint index1 = triangle.I1();
         const uint index2 = triangle.I2();
         const uint index3 = triangle.I3();
@@ -158,43 +179,55 @@ Surface Gmsh::getSurface(const uint label) const {
 
         auto find1 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index1](const std::pair<uint, uint> newIndex) {
+                         [index1](const std::pair<uint, uint> newIndex)
+                         {
                            return newIndex.first == index1;
                          });
-        if (find1 == newIndices.end()) {
+        if (find1 == newIndices.end())
+        {
           const uint newIndex1 = surfaceVertices.size();
           surfaceVertices.push_back(this->m_vertices.at(index1));
           newTriangle.setI1(newIndex1);
           newIndices.push_back({index1, newIndex1});
-        } else {
+        }
+        else
+        {
           newTriangle.setI1((*find1).second);
         }
 
         auto find2 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index2](const std::pair<uint, uint> oldIndex) {
+                         [index2](const std::pair<uint, uint> oldIndex)
+                         {
                            return oldIndex.first == index2;
                          });
-        if (find2 == newIndices.end()) {
+        if (find2 == newIndices.end())
+        {
           const uint newIndex2 = surfaceVertices.size();
           surfaceVertices.push_back(this->m_vertices.at(index2));
           newTriangle.setI2(newIndex2);
           newIndices.push_back({index2, newIndex2});
-        } else {
+        }
+        else
+        {
           newTriangle.setI2((*find2).second);
         }
 
         auto find3 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index3](const std::pair<uint, uint> oldIndex) {
+                         [index3](const std::pair<uint, uint> oldIndex)
+                         {
                            return oldIndex.first == index3;
                          });
-        if (find3 == newIndices.end()) {
+        if (find3 == newIndices.end())
+        {
           const uint newIndex3 = surfaceVertices.size();
           surfaceVertices.push_back(this->m_vertices.at(index3));
           newTriangle.setI3(newIndex3);
           newIndices.push_back({index3, newIndex3});
-        } else {
+        }
+        else
+        {
           newTriangle.setI3((*find3).second);
         }
 
@@ -205,7 +238,8 @@ Surface Gmsh::getSurface(const uint label) const {
   uint minIndex = 0; // Min is always 0
   uint maxIndex = 0;
   std::for_each(surfaceTriangles.begin(), surfaceTriangles.end(),
-                [&maxIndex](const Triangle triangle) {
+                [&maxIndex](const Triangle triangle)
+                {
                   const uint index1 = triangle.I1();
                   const uint index2 = triangle.I2();
                   const uint index3 = triangle.I3();
@@ -219,7 +253,8 @@ Surface Gmsh::getSurface(const uint label) const {
   Vertex maxVertex(surfaceVertices.size() ? surfaceVertices.at(0)
                                           : Vertex(0, 0, 0));
   std::for_each(surfaceVertices.begin(), surfaceVertices.end(),
-                [&minVertex, &maxVertex](const Vertex vertex) {
+                [&minVertex, &maxVertex](const Vertex vertex)
+                {
                   const double x = vertex.X();
                   const double y = vertex.Y();
                   const double z = vertex.Z();
@@ -250,7 +285,8 @@ Surface Gmsh::getSurface(const uint label) const {
  * @param label Label
  * @return Volume
  */
-Volume Gmsh::getVolume(const uint label) const {
+Volume Gmsh::getVolume(const uint label) const
+{
   // Volume tethrahedra & vertices
   std::vector<Tetrahedron> tempVolumeTetrahedra;
   std::vector<Tetrahedron> volumeTetrahedra;
@@ -258,8 +294,10 @@ Volume Gmsh::getVolume(const uint label) const {
 
   // Volume tetrahedra
   std::for_each(this->m_tetrahedra.begin(), this->m_tetrahedra.end(),
-                [label, &tempVolumeTetrahedra](const Tetrahedron tetrahedron) {
-                  if (tetrahedron.Label() == label) {
+                [label, &tempVolumeTetrahedra](const Tetrahedron tetrahedron)
+                {
+                  if (tetrahedron.Label() == label)
+                  {
                     tempVolumeTetrahedra.push_back(tetrahedron);
                   }
                 });
@@ -269,7 +307,8 @@ Volume Gmsh::getVolume(const uint label) const {
   std::for_each(
       tempVolumeTetrahedra.begin(), tempVolumeTetrahedra.end(),
       [this, &volumeVertices, &newIndices,
-       &volumeTetrahedra](const Tetrahedron tetrahedron) {
+       &volumeTetrahedra](const Tetrahedron tetrahedron)
+      {
         const uint index1 = tetrahedron.I1();
         const uint index2 = tetrahedron.I2();
         const uint index3 = tetrahedron.I3();
@@ -279,57 +318,73 @@ Volume Gmsh::getVolume(const uint label) const {
 
         auto find1 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index1](const std::pair<uint, uint> newIndex) {
+                         [index1](const std::pair<uint, uint> newIndex)
+                         {
                            return newIndex.first == index1;
                          });
-        if (find1 == newIndices.end()) {
+        if (find1 == newIndices.end())
+        {
           const uint newIndex1 = volumeVertices.size();
           volumeVertices.push_back(this->m_vertices.at(index1));
           newTetrahedron.setI1(newIndex1);
           newIndices.push_back({index1, newIndex1});
-        } else {
+        }
+        else
+        {
           newTetrahedron.setI1((*find1).second);
         }
 
         auto find2 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index2](const std::pair<uint, uint> oldIndex) {
+                         [index2](const std::pair<uint, uint> oldIndex)
+                         {
                            return oldIndex.first == index2;
                          });
-        if (find2 == newIndices.end()) {
+        if (find2 == newIndices.end())
+        {
           const uint newIndex2 = volumeVertices.size();
           volumeVertices.push_back(this->m_vertices.at(index2));
           newTetrahedron.setI2(newIndex2);
           newIndices.push_back({index2, newIndex2});
-        } else {
+        }
+        else
+        {
           newTetrahedron.setI2((*find2).second);
         }
 
         auto find3 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index3](const std::pair<uint, uint> oldIndex) {
+                         [index3](const std::pair<uint, uint> oldIndex)
+                         {
                            return oldIndex.first == index3;
                          });
-        if (find3 == newIndices.end()) {
+        if (find3 == newIndices.end())
+        {
           const uint newIndex3 = volumeVertices.size();
           volumeVertices.push_back(this->m_vertices.at(index3));
           newTetrahedron.setI3(newIndex3);
           newIndices.push_back({index3, newIndex3});
-        } else {
+        }
+        else
+        {
           newTetrahedron.setI3((*find3).second);
         }
 
         auto find4 =
             std::find_if(newIndices.begin(), newIndices.end(),
-                         [index4](const std::pair<uint, uint> oldIndex) {
+                         [index4](const std::pair<uint, uint> oldIndex)
+                         {
                            return oldIndex.first == index4;
                          });
-        if (find4 == newIndices.end()) {
+        if (find4 == newIndices.end())
+        {
           const uint newIndex4 = volumeVertices.size();
           volumeVertices.push_back(this->m_vertices.at(index4));
           newTetrahedron.setI4(newIndex4);
           newIndices.push_back({index4, newIndex4});
-        } else {
+        }
+        else
+        {
           newTetrahedron.setI4((*find4).second);
         }
 
@@ -341,7 +396,8 @@ Volume Gmsh::getVolume(const uint label) const {
   uint maxIndex = 0;
   std::for_each(
       volumeTetrahedra.begin(), volumeTetrahedra.end(),
-      [&maxIndex](const Tetrahedron tetrahedron) {
+      [&maxIndex](const Tetrahedron tetrahedron)
+      {
         const uint index1 = tetrahedron.I1();
         const uint index2 = tetrahedron.I2();
         const uint index3 = tetrahedron.I3();
@@ -357,7 +413,8 @@ Volume Gmsh::getVolume(const uint label) const {
   Vertex maxVertex(volumeVertices.size() ? volumeVertices.at(0)
                                          : Vertex(0, 0, 0));
   std::for_each(volumeVertices.begin(), volumeVertices.end(),
-                [&minVertex, &maxVertex](const Vertex vertex) {
+                [&minVertex, &maxVertex](const Vertex vertex)
+                {
                   const double x = vertex.X();
                   const double y = vertex.Y();
                   const double z = vertex.Z();

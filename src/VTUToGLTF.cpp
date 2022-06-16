@@ -24,12 +24,14 @@ bool writeOne(const Line &, const std::string &);
  * @param argv
  * @return int
  */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   bool res;
   std::string vtuFile;
   std::string genericGltfFile;
 
-  if (argc < 3) {
+  if (argc < 3)
+  {
     Logger::ERROR("USAGE:");
     Logger::ERROR("./VTUToGLTF vtuFile genericGltfFile");
     return EXIT_FAILURE;
@@ -40,7 +42,8 @@ int main(int argc, char *argv[]) {
   // Read VTU file
   auto reader = VTUReader(vtuFile);
   res = reader.read();
-  if (!res) {
+  if (!res)
+  {
     Logger::ERROR("Unable to read VTU file " + vtuFile);
     return EXIT_FAILURE;
   }
@@ -48,16 +51,21 @@ int main(int argc, char *argv[]) {
   std::vector<Surface> surfaces = reader.getSurfaces();
   std::vector<Line> lines = reader.getLines();
 
-  if (lines.size()) {
+  if (lines.size())
+  {
     // Process lines
     const auto numberOfLines = lines.size();
-    for (size_t i = 0; i < numberOfLines; ++i) {
+    for (size_t i = 0; i < numberOfLines; ++i)
+    {
       Line line = lines.at(i);
 
-      if (line.size == 1) { // Scalar
+      if (line.size == 1)
+      { // Scalar
         if (!writeOne(line, genericGltfFile + "_" + line.name + ".glb"))
           return EXIT_FAILURE;
-      } else if (line.size == 3) { // Vector
+      }
+      else if (line.size == 3)
+      { // Vector
         // Magnitude
         Line magnitude = getMagnitude(line);
         if (!writeOne(magnitude,
@@ -65,7 +73,8 @@ int main(int argc, char *argv[]) {
           return EXIT_FAILURE;
 
         // Component 1, 2 & 3
-        for (int j = 0; j < 3; ++j) {
+        for (int j = 0; j < 3; ++j)
+        {
           Line component = getComponent(line, j);
           if (!writeOne(component, genericGltfFile + "_" + line.name +
                                        "_component" + std::to_string(j + 1) +
@@ -74,16 +83,22 @@ int main(int argc, char *argv[]) {
         }
       }
     }
-  } else {
+  }
+  else
+  {
     // Process surfaces
     const auto numberOfSurfaces = surfaces.size();
-    for (size_t i = 0; i < numberOfSurfaces; ++i) {
+    for (size_t i = 0; i < numberOfSurfaces; ++i)
+    {
       Surface surface = surfaces.at(i);
 
-      if (surface.size == 1) { // Scalar
+      if (surface.size == 1)
+      { // Scalar
         if (!writeOne(surface, genericGltfFile + "_" + surface.name + ".glb"))
           return EXIT_FAILURE;
-      } else if (surface.size == 3) { // Vector
+      }
+      else if (surface.size == 3)
+      { // Vector
         // Magnitude
         Surface magnitude = getMagnitude(surface);
         if (!writeOne(magnitude,
@@ -91,7 +106,8 @@ int main(int argc, char *argv[]) {
           return EXIT_FAILURE;
 
         // Component 1, 2 & 3
-        for (int j = 0; j < 3; ++j) {
+        for (int j = 0; j < 3; ++j)
+        {
           Surface component = getComponent(surface, j);
           if (!writeOne(component, genericGltfFile + "_" + surface.name +
                                        "_component" + std::to_string(j + 1) +
@@ -110,13 +126,15 @@ int main(int argc, char *argv[]) {
  * @param result Result
  * @return Magnitude
  */
-Surface getMagnitude(const Surface &result) {
+Surface getMagnitude(const Surface &result)
+{
   Surface magnitude = result;
   magnitude.size = 1;
   magnitude.name = result.name + " (magnitude)";
 
   magnitude.values.clear();
-  for (uint i = 0; i < result.values.size() / 3; ++i) {
+  for (uint i = 0; i < result.values.size() / 3; ++i)
+  {
     auto v = sqrt(pow(result.values[3 * i + 0], 2) +
                   pow(result.values[3 * i + 1], 2) +
                   pow(result.values[3 * i + 2], 2));
@@ -126,7 +144,8 @@ Surface getMagnitude(const Surface &result) {
   double minValue = magnitude.values.size() ? magnitude.values.at(0) : 0;
   double maxValue = magnitude.values.size() ? magnitude.values.at(0) : 0;
   std::for_each(magnitude.values.begin(), magnitude.values.end(),
-                [&minValue, &maxValue](const double value) {
+                [&minValue, &maxValue](const double value)
+                {
                   minValue = std::min(minValue, value);
                   maxValue = std::max(maxValue, value);
                 });
@@ -142,13 +161,15 @@ Surface getMagnitude(const Surface &result) {
  * @param result Result
  * @return Magnitude
  */
-Line getMagnitude(const Line &result) {
+Line getMagnitude(const Line &result)
+{
   Line magnitude = result;
   magnitude.size = 1;
   magnitude.name = result.name + " (magnitude)";
 
   magnitude.values.clear();
-  for (uint i = 0; i < result.values.size() / 3; ++i) {
+  for (uint i = 0; i < result.values.size() / 3; ++i)
+  {
     auto v = sqrt(pow(result.values[3 * i + 0], 2) +
                   pow(result.values[3 * i + 1], 2) +
                   pow(result.values[3 * i + 2], 2));
@@ -158,7 +179,8 @@ Line getMagnitude(const Line &result) {
   double minValue = magnitude.values.size() ? magnitude.values.at(0) : 0;
   double maxValue = magnitude.values.size() ? magnitude.values.at(0) : 0;
   std::for_each(magnitude.values.begin(), magnitude.values.end(),
-                [&minValue, &maxValue](const double value) {
+                [&minValue, &maxValue](const double value)
+                {
                   minValue = std::min(minValue, value);
                   maxValue = std::max(maxValue, value);
                 });
@@ -175,14 +197,16 @@ Line getMagnitude(const Line &result) {
  * @param index Index
  * @return Component
  */
-Surface getComponent(const Surface &result, const int index) {
+Surface getComponent(const Surface &result, const int index)
+{
   Surface component = result;
   component.size = 1;
   component.name =
       result.name + " (component " + std::to_string(index + 1) + ")";
 
   component.values.clear();
-  for (uint i = 0; i < result.values.size() / 3; ++i) {
+  for (uint i = 0; i < result.values.size() / 3; ++i)
+  {
     double v = result.values[3 * i + index];
     component.values.push_back(v);
   }
@@ -190,7 +214,8 @@ Surface getComponent(const Surface &result, const int index) {
   double minValue = component.values.size() ? component.values.at(0) : 0;
   double maxValue = component.values.size() ? component.values.at(0) : 0;
   std::for_each(component.values.begin(), component.values.end(),
-                [&minValue, &maxValue](const double value) {
+                [&minValue, &maxValue](const double value)
+                {
                   minValue = std::min(minValue, value);
                   maxValue = std::max(maxValue, value);
                 });
@@ -207,14 +232,16 @@ Surface getComponent(const Surface &result, const int index) {
  * @param index Index
  * @return Component
  */
-Line getComponent(const Line &result, const int index) {
+Line getComponent(const Line &result, const int index)
+{
   Line component = result;
   component.size = 1;
   component.name =
       result.name + " (component " + std::to_string(index + 1) + ")";
 
   component.values.clear();
-  for (uint i = 0; i < result.values.size() / 3; ++i) {
+  for (uint i = 0; i < result.values.size() / 3; ++i)
+  {
     double v = result.values[3 * i + index];
     component.values.push_back(v);
   }
@@ -222,7 +249,8 @@ Line getComponent(const Line &result, const int index) {
   double minValue = component.values.size() ? component.values.at(0) : 0;
   double maxValue = component.values.size() ? component.values.at(0) : 0;
   std::for_each(component.values.begin(), component.values.end(),
-                [&minValue, &maxValue](const double value) {
+                [&minValue, &maxValue](const double value)
+                {
                   minValue = std::min(minValue, value);
                   maxValue = std::max(maxValue, value);
                 });
@@ -239,7 +267,8 @@ Line getComponent(const Line &result, const int index) {
  * @param gltfFile GLTF file
  * @return Status
  */
-bool writeOne(const Surface &result, const std::string &gltfFile) {
+bool writeOne(const Surface &result, const std::string &gltfFile)
+{
   tinygltf::Model model;
   tinygltf::Scene scene;
   tinygltf::Asset asset;
@@ -258,7 +287,8 @@ bool writeOne(const Surface &result, const std::string &gltfFile) {
 
   // Indices
   std::for_each(result.triangles.begin(), result.triangles.end(),
-                [&buffer](const Triangle triangle) {
+                [&buffer](const Triangle triangle)
+                {
                   uint index1 = triangle.I1();
                   uint index2 = triangle.I2();
                   uint index3 = triangle.I3();
@@ -271,13 +301,15 @@ bool writeOne(const Surface &result, const std::string &gltfFile) {
 
   // Padding
   size_t paddingLength = buffer.data.size() % 4;
-  for (size_t padding; padding < paddingLength; ++padding) {
+  for (size_t padding; padding < paddingLength; ++padding)
+  {
     buffer.data.push_back(0x00);
   }
 
   // Vertices
   std::for_each(result.vertices.begin(), result.vertices.end(),
-                [&buffer](const Vertex vertex) {
+                [&buffer](const Vertex vertex)
+                {
                   double x = vertex.X();
                   double y = vertex.Y();
                   double z = vertex.Z();
@@ -290,13 +322,15 @@ bool writeOne(const Surface &result, const std::string &gltfFile) {
 
   // Padding
   size_t paddingLength2 = buffer.data.size() % 4;
-  for (size_t padding; padding < paddingLength2; ++padding) {
+  for (size_t padding; padding < paddingLength2; ++padding)
+  {
     buffer.data.push_back(0x00);
   }
 
   // Colors
   std::for_each(result.values.begin(), result.values.end(),
-                [&result, &buffer](const double value) {
+                [&result, &buffer](const double value)
+                {
                   // To buffer
                   Utils::floatToBuffer(value, buffer.data);
                 });
@@ -405,7 +439,8 @@ bool writeOne(const Surface &result, const std::string &gltfFile) {
                                        true,  // embedBuffers
                                        true,  // pretty print
                                        true); // write binary
-  if (!res) {
+  if (!res)
+  {
     Logger::ERROR("Unable to write glft file " + gltfFile);
     return false;
   }
@@ -422,7 +457,8 @@ bool writeOne(const Surface &result, const std::string &gltfFile) {
  * @param gltfFile GLTF file
  * @return Status
  */
-bool writeOne(const Line &result, const std::string &gltfFile) {
+bool writeOne(const Line &result, const std::string &gltfFile)
+{
   tinygltf::Model model;
   tinygltf::Scene scene;
   tinygltf::Asset asset;
@@ -442,11 +478,13 @@ bool writeOne(const Line &result, const std::string &gltfFile) {
   // Indices
   uint sizeOfPolygons = 0;
   std::for_each(result.polygons.begin(), result.polygons.end(),
-                [&buffer, &sizeOfPolygons](const Polygon polygon) {
+                [&buffer, &sizeOfPolygons](const Polygon polygon)
+                {
                   std::vector<uint> indices = polygon.getIndices();
 
                   std::for_each(indices.begin(), indices.end(),
-                                [&buffer, &sizeOfPolygons](const uint index) {
+                                [&buffer, &sizeOfPolygons](const uint index)
+                                {
                                   sizeOfPolygons++;
                                   Utils::uintToBuffer(index, buffer.data);
                                 });
@@ -454,13 +492,15 @@ bool writeOne(const Line &result, const std::string &gltfFile) {
 
   // Padding
   size_t paddingLength = buffer.data.size() % 4;
-  for (size_t padding; padding < paddingLength; ++padding) {
+  for (size_t padding; padding < paddingLength; ++padding)
+  {
     buffer.data.push_back(0x00);
   }
 
   // Vertices
   std::for_each(result.vertices.begin(), result.vertices.end(),
-                [&buffer](const Vertex vertex) {
+                [&buffer](const Vertex vertex)
+                {
                   double x = vertex.X();
                   double y = vertex.Y();
                   double z = vertex.Z();
@@ -473,13 +513,15 @@ bool writeOne(const Line &result, const std::string &gltfFile) {
 
   // Padding
   size_t paddingLength2 = buffer.data.size() % 4;
-  for (size_t padding; padding < paddingLength2; ++padding) {
+  for (size_t padding; padding < paddingLength2; ++padding)
+  {
     buffer.data.push_back(0x00);
   }
 
   // Colors
   std::for_each(result.values.begin(), result.values.end(),
-                [&result, &buffer](const double value) {
+                [&result, &buffer](const double value)
+                {
                   // To buffer
                   Utils::floatToBuffer(value, buffer.data);
                 });
@@ -588,7 +630,8 @@ bool writeOne(const Line &result, const std::string &gltfFile) {
                                        true,  // embedBuffers
                                        true,  // pretty print
                                        true); // write binary
-  if (!res) {
+  if (!res)
+  {
     Logger::ERROR("Unable to write glft file " + gltfFile);
     return false;
   }
