@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    if: "!contains(github.event.commits[0].message, '[skip ci]')"
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install
+      run: |
+        sudo apt update
+        sudo apt install -y cppcheck
+    - name: cppcheck
+      run: cppcheck --enable=warning,style,performance,portability,information,missingInclude --suppressions-list=.cppcheck-suppress converters/

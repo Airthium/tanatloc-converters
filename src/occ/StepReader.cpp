@@ -19,21 +19,18 @@ StepReader::StepReader(const std::string &fileName) : m_fileName(fileName) {}
  * Read
  * @returns Status
  */
-bool StepReader::read()
-{
+bool StepReader::read() {
   // Read
   IFSelect_ReturnStatus status;
   auto caf_reader = STEPCAFControl_Reader();
   status = caf_reader.ReadFile(this->m_fileName.c_str());
-  if (status != IFSelect_RetDone)
-  {
+  if (status != IFSelect_RetDone) {
     Logger::ERROR("Unable to read " + this->m_fileName);
     return false;
   }
 
   // Transfer
-  if (!caf_reader.Transfer(this->m_mainDocument.document))
-  {
+  if (!caf_reader.Transfer(this->m_mainDocument.document)) {
     Logger::ERROR("Unable to transfert root");
     return false;
   }
@@ -41,12 +38,10 @@ bool StepReader::read()
   return true;
 }
 
-TopoDS_Compound StepReader::getCompound() const
-{
+TopoDS_Compound StepReader::getCompound() const {
   return this->m_mainDocument.getCompound();
 }
 
-Quantity_Color StepReader::getShapeColor(const TopoDS_Shape &shape) const
-{
+Quantity_Color StepReader::getShapeColor(const TopoDS_Shape &shape) const {
   return this->m_mainDocument.getShapeColor(shape);
 }

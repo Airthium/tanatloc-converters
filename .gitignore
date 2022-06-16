@@ -1,3 +1,10 @@
 .vscode
 
+# Build
 build
+
+# Tests
+test/assets/Cube
+
+# Coverage
+coverage
