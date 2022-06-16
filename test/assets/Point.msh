@@ -1,0 +1,15 @@
+$MeshFormat
+2.2 0 8
+$EndMeshFormat
+$PhysicalNames
+1
+0 1 "1"
+$EndPhysicalNames
+$Nodes
+1
+1 0 0 0
+$EndNodes
+$Elements
+1
+1 15 2 1 1 1
+$EndElements
