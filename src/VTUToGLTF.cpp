@@ -51,69 +51,64 @@ int main(int argc, char *argv[])
   std::vector<Surface> surfaces = reader.getSurfaces();
   std::vector<Line> lines = reader.getLines();
 
-  if (lines.size())
+  // Process lines
+  const auto numberOfLines = lines.size();
+  for (size_t i = 0; i < numberOfLines; ++i)
   {
-    // Process lines
-    const auto numberOfLines = lines.size();
-    for (size_t i = 0; i < numberOfLines; ++i)
-    {
-      Line line = lines.at(i);
+    Line line = lines.at(i);
 
-      if (line.size == 1)
-      { // Scalar
-        if (!writeOne(line, genericGltfFile + "_" + line.name + ".glb"))
-          return EXIT_FAILURE;
-      }
-      else if (line.size == 3)
-      { // Vector
-        // Magnitude
-        Line magnitude = getMagnitude(line);
-        if (!writeOne(magnitude,
-                      genericGltfFile + "_" + line.name + "_magnitude.glb"))
-          return EXIT_FAILURE;
+    if (line.size == 1)
+    { // Scalar
+      if (!writeOne(line, genericGltfFile + "_" + line.name + "_line.glb"))
+        return EXIT_FAILURE;
+    }
+    else if (line.size == 3)
+    { // Vector
+      // Magnitude
+      Line magnitude = getMagnitude(line);
+      if (!writeOne(magnitude,
+                    genericGltfFile + "_" + line.name + "_magnitude_line.glb"))
+        return EXIT_FAILURE;
 
-        // Component 1, 2 & 3
-        for (int j = 0; j < 3; ++j)
-        {
-          Line component = getComponent(line, j);
-          if (!writeOne(component, genericGltfFile + "_" + line.name +
-                                       "_component" + std::to_string(j + 1) +
-                                       ".glb"))
-            return EXIT_FAILURE;
-        }
+      // Component 1, 2 & 3
+      for (int j = 0; j < 3; ++j)
+      {
+        Line component = getComponent(line, j);
+        if (!writeOne(component, genericGltfFile + "_" + line.name +
+                                     "_component" + std::to_string(j + 1) +
+                                     "_line.glb"))
+          return EXIT_FAILURE;
       }
     }
   }
-  else
+
+  // Process surfaces
+  const auto numberOfSurfaces = surfaces.size();
+  for (size_t i = 0; i < numberOfSurfaces; ++i)
   {
-    // Process surfaces
-    const auto numberOfSurfaces = surfaces.size();
-    for (size_t i = 0; i < numberOfSurfaces; ++i)
-    {
-      Surface surface = surfaces.at(i);
+    Surface surface = surfaces.at(i);
 
-      if (surface.size == 1)
-      { // Scalar
-        if (!writeOne(surface, genericGltfFile + "_" + surface.name + ".glb"))
-          return EXIT_FAILURE;
-      }
-      else if (surface.size == 3)
-      { // Vector
-        // Magnitude
-        Surface magnitude = getMagnitude(surface);
-        if (!writeOne(magnitude,
-                      genericGltfFile + "_" + surface.name + "_magnitude.glb"))
-          return EXIT_FAILURE;
+    if (surface.size == 1)
+    { // Scalar
+      if (!writeOne(surface, genericGltfFile + "_" + surface.name + "_surface.glb"))
+        return EXIT_FAILURE;
+    }
+    else if (surface.size == 3)
+    { // Vector
+      // Magnitude
+      Surface magnitude = getMagnitude(surface);
+      if (!writeOne(magnitude,
+                    genericGltfFile + "_" + surface.name + "_magnitude_surface.glb"))
+        return EXIT_FAILURE;
 
-        // Component 1, 2 & 3
-        for (int j = 0; j < 3; ++j)
-        {
-          Surface component = getComponent(surface, j);
-          if (!writeOne(component, genericGltfFile + "_" + surface.name +
-                                       "_component" + std::to_string(j + 1) +
-                                       ".glb"))
-            return EXIT_FAILURE;
-        }
+      // Component 1, 2 & 3
+      for (int j = 0; j < 3; ++j)
+      {
+        Surface component = getComponent(surface, j);
+        if (!writeOne(component, genericGltfFile + "_" + surface.name +
+                                     "_component" + std::to_string(j + 1) +
+                                     "_surface.glb"))
+          return EXIT_FAILURE;
       }
     }
   }
