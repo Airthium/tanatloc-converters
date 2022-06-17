@@ -49,6 +49,31 @@ struct Line {
   std::vector<double> values;
 };
 
+struct Result {
+  uint size;
+  std::string name;
+
+  uint polygonsMinIndex;
+  uint polygonsMaxIndex;
+  Vertex polygonsMinVertex;
+  Vertex polygonsMaxVertex;
+  double polygonsMinValue;
+  double polygonsMaxValue;
+  std::vector<Polygon> polygons;
+  std::vector<Vertex> polygonsVertices;
+  std::vector<double> polygonsValues;
+
+  uint trianglesMinIndex;
+  uint trianglesMaxIndex;
+  Vertex trianglesMinVertex;
+  Vertex trianglesMaxVertex;
+  double trianglesMinValue;
+  double trianglesMaxValue;
+  std::vector<Triangle> triangles;
+  std::vector<Vertex> trianglesVertices;
+  std::vector<double> trianglesValues;
+};
+
 class VTUReader {
 private:
   std::string m_fileName = "";
@@ -69,11 +94,14 @@ public:
   // Get arrays
   std::vector<VTUData> getArrays() const;
 
-  // Get surfaces
-  std::vector<Surface> getSurfaces() const;
+  // Get results
+  std::vector<Result> getResults() const;
 
-  // Get lines
-  std::vector<Line> getLines() const;
+  // // Get surfaces
+  // std::vector<Surface> getSurfaces() const;
+
+  // // Get lines
+  // std::vector<Line> getLines() const;
 };
 
 #endif // VTU_READER_
