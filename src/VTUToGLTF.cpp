@@ -401,6 +401,10 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   polygonsNode.mesh = (int)model.meshes.size() - 1;
   model.nodes.push_back(polygonsNode);
 
+  // Scene (polygons)
+  if (polygonsBuffer.data.size())
+    scene.nodes.push_back((int)model.nodes.size() - 1);
+
   // Model (triangles)
   model.buffers.push_back(trianglesBuffer);
 
@@ -482,10 +486,11 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   trianglesNode.mesh = (int)model.meshes.size() - 1;
   model.nodes.push_back(trianglesNode);
 
-  // Scene
-  scene.nodes.push_back((int)model.nodes.size() - 2);
-  scene.nodes.push_back((int)model.nodes.size() - 1);
+  // Scene (triangles)
+  if (trianglesBuffer.data.size())
+    scene.nodes.push_back((int)model.nodes.size() - 1);
 
+  // Scene
   scene.name = "master";
   scene.extras = tinygltf::Value(
       {{"type", tinygltf::Value(std::string("result"))},
