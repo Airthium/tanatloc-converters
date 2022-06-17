@@ -21,33 +21,33 @@ struct VTUData {
   std::vector<double> values;
 };
 
-struct Surface {
-  uint size;
-  std::string name;
-  uint minIndex;
-  uint maxIndex;
-  Vertex minVertex;
-  Vertex maxVertex;
-  double minValue;
-  double maxValue;
-  std::vector<Triangle> triangles;
-  std::vector<Vertex> vertices;
-  std::vector<double> values;
-};
+// struct Surface {
+//   uint size;
+//   std::string name;
+//   uint minIndex;
+//   uint maxIndex;
+//   Vertex minVertex;
+//   Vertex maxVertex;
+//   double minValue;
+//   double maxValue;
+//   std::vector<Triangle> triangles;
+//   std::vector<Vertex> vertices;
+//   std::vector<double> values;
+// };
 
-struct Line {
-  uint size;
-  std::string name;
-  uint minIndex;
-  uint maxIndex;
-  Vertex minVertex;
-  Vertex maxVertex;
-  double minValue;
-  double maxValue;
-  std::vector<Polygon> polygons;
-  std::vector<Vertex> vertices;
-  std::vector<double> values;
-};
+// struct Line {
+//   uint size;
+//   std::string name;
+//   uint minIndex;
+//   uint maxIndex;
+//   Vertex minVertex;
+//   Vertex maxVertex;
+//   double minValue;
+//   double maxValue;
+//   std::vector<Polygon> polygons;
+//   std::vector<Vertex> vertices;
+//   std::vector<double> values;
+// };
 
 struct Result {
   uint size;

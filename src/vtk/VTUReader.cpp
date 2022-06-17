@@ -133,7 +133,7 @@ std::vector<VTUData> VTUReader::getArrays() const { return this->m_arrays; }
  * Find index
  * @param index Index
  * @param indices Indices
- * @return int Find
+ * @return Find
  */
 int findIndex(uint index, std::vector<std::pair<uint, uint>> &indices) {
   auto find = std::find_if(indices.begin(), indices.end(),
@@ -153,7 +153,7 @@ int findIndex(uint index, std::vector<std::pair<uint, uint>> &indices) {
  * @param data Data
  * @param vertices Vertices
  * @param values Values
- * @return uint New index
+ * @return New index
  */
 uint addVertex(uint index, const VTUData &data, std::vector<Vertex> &vertices,
                std::vector<double> &values) {
@@ -336,7 +336,7 @@ std::vector<Result> VTUReader::getResults() const {
   std::vector<VTUData> arrays = this->m_arrays;
   std::vector<Result> results;
 
-  std::for_each(arrays.begin(), arrays.end(), [&results](VTUData &data) {
+  std::for_each(arrays.begin(), arrays.end(), [&results](const VTUData &data) {
     // Lines polygons, surface triangles & vertices
     std::vector<Polygon> tempPloygons = data.polygons;
     std::vector<Polygon> polygons;

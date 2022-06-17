@@ -11,8 +11,10 @@
 
 #include <tiny_gltf.h>
 
+Result getMagnitude(const Result &);
 // Surface getMagnitude(const Surface &);
 // Line getMagnitude(const Line &);
+Result getComponent(const Result &, const int);
 // Surface getComponent(const Surface &, const int);
 // Line getComponent(const Line &, const int);
 bool writeOne(const Result &, const std::string &);
@@ -48,16 +50,36 @@ int main(int argc, char *argv[]) {
 
   std::vector<Result> results = reader.getResults();
 
-  std::for_each(
-      results.begin(), results.end(), [&genericGltfFile](Result result) {
-        if (result.size == 1) { // Scalar
-          const bool res =
-              writeOne(result, genericGltfFile + "_" + result.name + ".glb");
-          if (!res)
-            return EXIT_FAILURE;
-        }
-        // TODO else ...
-      });
+  for (size_t i = 0; i < results.size(); i++) {
+    Result result = results.at(i);
+    // std::for_each(
+    //     results.begin(), results.end(), [&genericGltfFile](const Result
+    //     &result) {
+    if (result.size == 1) { // Scalar
+      bool status =
+          writeOne(result, genericGltfFile + "_" + result.name + ".glb");
+      if (!status)
+        return EXIT_FAILURE;
+    } else if (result.size == 3) { // Vector
+      // Magnitude
+      Result magnitude = getMagnitude(result);
+      bool status = writeOne(magnitude, genericGltfFile + "_" + result.name +
+                                            "_magnitude_line.glb");
+      if (!status)
+        return EXIT_FAILURE;
+
+      // Component 1, 2 & 3
+      for (int j = 0; j < 3; ++j) {
+        Result component = getComponent(result, j);
+        status = writeOne(component, genericGltfFile + "_" + result.name +
+                                         "_component" + std::to_string(j + 1) +
+                                         "_line.glb");
+        if (!status)
+          return EXIT_FAILURE;
+      }
+    }
+    // });
+  }
 
   // std::vector<Surface> surfaces = reader.getSurfaces();
   // std::vector<Line> lines = reader.getLines();
@@ -117,6 +139,65 @@ int main(int argc, char *argv[]) {
   // }
 
   return EXIT_SUCCESS;
+}
+
+/**
+ * Get magnitude
+ * @param result Result
+ * @return Magnitude
+ */
+Result getMagnitude(const Result &result) {
+  Result magnitude = result;
+  magnitude.size = 1;
+  magnitude.name = result.name + " (magnitude)";
+
+  // Polygons values
+  magnitude.polygonsValues.clear();
+  for (uint i = 0; i < result.polygonsValues.size() / 3; ++i) {
+    auto v = sqrt(pow(result.polygonsValues[3 * i + 0], 2) +
+                  pow(result.polygonsValues[3 * i + 1], 2) +
+                  pow(result.polygonsValues[3 * i + 2], 2));
+    magnitude.polygonsValues.push_back(v);
+  }
+
+  double polygonsMinValue =
+      magnitude.polygonsValues.size() ? magnitude.polygonsValues.at(0) : 0;
+  double polygonsMaxValue =
+      magnitude.polygonsValues.size() ? magnitude.polygonsValues.at(0) : 0;
+  std::for_each(magnitude.polygonsValues.begin(),
+                magnitude.polygonsValues.end(),
+                [&polygonsMinValue, &polygonsMaxValue](const double value) {
+                  polygonsMinValue = std::min(polygonsMinValue, value);
+                  polygonsMaxValue = std::max(polygonsMaxValue, value);
+                });
+
+  magnitude.polygonsMinValue = polygonsMinValue;
+  magnitude.polygonsMaxValue = polygonsMaxValue;
+
+  // Triangles values
+  magnitude.trianglesValues.clear();
+  for (uint i = 0; i < result.trianglesValues.size() / 3; ++i) {
+    auto v = sqrt(pow(result.trianglesValues[3 * i + 0], 2) +
+                  pow(result.trianglesValues[3 * i + 1], 2) +
+                  pow(result.trianglesValues[3 * i + 2], 2));
+    magnitude.trianglesValues.push_back(v);
+  }
+
+  double trianglesMinValue =
+      magnitude.trianglesValues.size() ? magnitude.trianglesValues.at(0) : 0;
+  double trianglesMaxValue =
+      magnitude.trianglesValues.size() ? magnitude.trianglesValues.at(0) : 0;
+  std::for_each(magnitude.trianglesValues.begin(),
+                magnitude.trianglesValues.end(),
+                [&trianglesMinValue, &trianglesMaxValue](const double value) {
+                  trianglesMinValue = std::min(trianglesMinValue, value);
+                  trianglesMaxValue = std::max(trianglesMaxValue, value);
+                });
+
+  magnitude.trianglesMinValue = trianglesMinValue;
+  magnitude.trianglesMaxValue = trianglesMaxValue;
+
+  return magnitude;
 }
 
 // /**
@@ -182,6 +263,63 @@ int main(int argc, char *argv[]) {
 
 //   return magnitude;
 // }
+
+/**
+ * Get component
+ * @param result Result
+ * @param index Index
+ * @return Component
+ */
+Result getComponent(const Result &result, const int index) {
+  Result component = result;
+  component.size = 1;
+  component.name =
+      result.name + " (component " + std::to_string(index + 1) + ")";
+
+  // Polygons values
+  component.polygonsValues.clear();
+  for (uint i = 0; i < result.polygonsValues.size() / 3; ++i) {
+    double v = result.polygonsValues[3 * i + index];
+    component.polygonsValues.push_back(v);
+  }
+
+  double polygonsMinValue =
+      component.polygonsValues.size() ? component.polygonsValues.at(0) : 0;
+  double polygonsMaxValue =
+      component.polygonsValues.size() ? component.polygonsValues.at(0) : 0;
+  std::for_each(component.polygonsValues.begin(),
+                component.polygonsValues.end(),
+                [&polygonsMinValue, &polygonsMaxValue](const double value) {
+                  polygonsMinValue = std::min(polygonsMinValue, value);
+                  polygonsMaxValue = std::max(polygonsMaxValue, value);
+                });
+
+  component.polygonsMinValue = polygonsMinValue;
+  component.polygonsMaxValue = polygonsMaxValue;
+
+  // Triangles values
+  component.trianglesValues.clear();
+  for (uint i = 0; i < result.trianglesValues.size() / 3; ++i) {
+    double v = result.trianglesValues[3 * i + index];
+    component.trianglesValues.push_back(v);
+  }
+
+  double trianglesMinValue =
+      component.trianglesValues.size() ? component.trianglesValues.at(0) : 0;
+  double trianglesMaxValue =
+      component.trianglesValues.size() ? component.trianglesValues.at(0) : 0;
+  std::for_each(component.trianglesValues.begin(),
+                component.trianglesValues.end(),
+                [&trianglesMinValue, &trianglesMaxValue](const double value) {
+                  trianglesMinValue = std::min(trianglesMinValue, value);
+                  trianglesMaxValue = std::max(trianglesMaxValue, value);
+                });
+
+  component.trianglesMinValue = trianglesMinValue;
+  component.trianglesMaxValue = trianglesMaxValue;
+
+  return component;
+}
 
 // /**
 //  * Get component
@@ -379,84 +517,85 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
                   Utils::floatToBuffer((float)value, trianglesBuffer.data);
                 });
 
-  // Model (polygons)
-  model.buffers.push_back(polygonsBuffer);
+  // // Model (polygons)
+  // model.buffers.push_back(polygonsBuffer);
 
-  // Buffer views (polygons)
-  polygonsBufferViewIndices.buffer = (int)model.buffers.size() - 1;
-  polygonsBufferViewIndices.byteOffset = 0;
-  polygonsBufferViewIndices.byteLength = sizeOfPolygons * __SIZEOF_INT__;
-  polygonsBufferViewIndices.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
-  model.bufferViews.push_back(polygonsBufferViewIndices);
+  // // Buffer views (polygons)
+  // polygonsBufferViewIndices.buffer = (int)model.buffers.size() - 1;
+  // polygonsBufferViewIndices.byteOffset = 0;
+  // polygonsBufferViewIndices.byteLength = sizeOfPolygons * __SIZEOF_INT__;
+  // polygonsBufferViewIndices.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+  // model.bufferViews.push_back(polygonsBufferViewIndices);
 
-  polygonsBufferViewVertices.buffer = (int)model.buffers.size() - 1;
-  polygonsBufferViewVertices.byteOffset =
-      sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength;
-  polygonsBufferViewVertices.byteLength =
-      result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__;
-  polygonsBufferViewVertices.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-  model.bufferViews.push_back(polygonsBufferViewVertices);
+  // polygonsBufferViewVertices.buffer = (int)model.buffers.size() - 1;
+  // polygonsBufferViewVertices.byteOffset =
+  //     sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength;
+  // polygonsBufferViewVertices.byteLength =
+  //     result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__;
+  // polygonsBufferViewVertices.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+  // model.bufferViews.push_back(polygonsBufferViewVertices);
 
-  polygonsBufferViewColors.buffer = (int)model.buffers.size() - 1;
-  polygonsBufferViewColors.byteOffset =
-      sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength +
-      result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__ +
-      polygonsPaddingLength2;
-  polygonsBufferViewColors.byteLength =
-      result.polygonsValues.size() * __SIZEOF_FLOAT__;
-  polygonsBufferViewColors.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-  model.bufferViews.push_back(polygonsBufferViewColors);
+  // polygonsBufferViewColors.buffer = (int)model.buffers.size() - 1;
+  // polygonsBufferViewColors.byteOffset =
+  //     sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength +
+  //     result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__ +
+  //     polygonsPaddingLength2;
+  // polygonsBufferViewColors.byteLength =
+  //     result.polygonsValues.size() * __SIZEOF_FLOAT__;
+  // polygonsBufferViewColors.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+  // model.bufferViews.push_back(polygonsBufferViewColors);
 
-  // Accessors (polygons)
-  polygonsAccessorIndices.bufferView = (int)model.bufferViews.size() - 3;
-  polygonsAccessorIndices.byteOffset = 0;
-  polygonsAccessorIndices.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
-  polygonsAccessorIndices.count = sizeOfPolygons;
-  polygonsAccessorIndices.type = TINYGLTF_TYPE_SCALAR;
-  polygonsAccessorIndices.minValues.push_back(result.polygonsMinIndex);
-  polygonsAccessorIndices.maxValues.push_back(result.polygonsMaxIndex);
-  model.accessors.push_back(polygonsAccessorIndices);
+  // // Accessors (polygons)
+  // polygonsAccessorIndices.bufferView = (int)model.bufferViews.size() - 3;
+  // polygonsAccessorIndices.byteOffset = 0;
+  // polygonsAccessorIndices.componentType =
+  // TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT; polygonsAccessorIndices.count =
+  // sizeOfPolygons; polygonsAccessorIndices.type = TINYGLTF_TYPE_SCALAR;
+  // polygonsAccessorIndices.minValues.push_back(result.polygonsMinIndex);
+  // polygonsAccessorIndices.maxValues.push_back(result.polygonsMaxIndex);
+  // model.accessors.push_back(polygonsAccessorIndices);
 
-  polygonsAccessorVertices.bufferView = (int)model.bufferViews.size() - 2;
-  polygonsAccessorVertices.byteOffset = 0;
-  polygonsAccessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-  polygonsAccessorVertices.count = result.polygonsVertices.size();
-  polygonsAccessorVertices.type = TINYGLTF_TYPE_VEC3;
-  polygonsAccessorVertices.minValues = {result.polygonsMinVertex.X(),
-                                        result.polygonsMinVertex.Y(),
-                                        result.polygonsMinVertex.Z()};
-  polygonsAccessorVertices.maxValues = {result.polygonsMaxVertex.X(),
-                                        result.polygonsMaxVertex.Y(),
-                                        result.polygonsMaxVertex.Z()};
-  model.accessors.push_back(polygonsAccessorVertices);
+  // polygonsAccessorVertices.bufferView = (int)model.bufferViews.size() - 2;
+  // polygonsAccessorVertices.byteOffset = 0;
+  // polygonsAccessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+  // polygonsAccessorVertices.count = result.polygonsVertices.size();
+  // polygonsAccessorVertices.type = TINYGLTF_TYPE_VEC3;
+  // polygonsAccessorVertices.minValues = {result.polygonsMinVertex.X(),
+  //                                       result.polygonsMinVertex.Y(),
+  //                                       result.polygonsMinVertex.Z()};
+  // polygonsAccessorVertices.maxValues = {result.polygonsMaxVertex.X(),
+  //                                       result.polygonsMaxVertex.Y(),
+  //                                       result.polygonsMaxVertex.Z()};
+  // model.accessors.push_back(polygonsAccessorVertices);
 
-  polygonsAccessorColors.bufferView = (int)model.bufferViews.size() - 1;
-  polygonsAccessorColors.byteOffset = 0;
-  polygonsAccessorColors.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-  polygonsAccessorColors.count = result.polygonsValues.size();
-  polygonsAccessorColors.type = TINYGLTF_TYPE_SCALAR;
-  polygonsAccessorColors.minValues.push_back(result.polygonsMinValue);
-  polygonsAccessorColors.maxValues.push_back(result.polygonsMaxValue);
-  model.accessors.push_back(polygonsAccessorColors);
+  // polygonsAccessorColors.bufferView = (int)model.bufferViews.size() - 1;
+  // polygonsAccessorColors.byteOffset = 0;
+  // polygonsAccessorColors.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+  // polygonsAccessorColors.count = result.polygonsValues.size();
+  // polygonsAccessorColors.type = TINYGLTF_TYPE_SCALAR;
+  // polygonsAccessorColors.minValues.push_back(result.polygonsMinValue);
+  // polygonsAccessorColors.maxValues.push_back(result.polygonsMaxValue);
+  // model.accessors.push_back(polygonsAccessorColors);
 
-  // Primitive (polygons)
-  polygonsPrimitive.indices = (int)model.accessors.size() - 3;
-  polygonsPrimitive.attributes["POSITION"] = (int)model.accessors.size() - 2;
-  polygonsPrimitive.attributes["DATA"] = (int)model.accessors.size() - 1;
-  polygonsPrimitive.material = (int)model.materials.size() - 1;
-  polygonsPrimitive.mode = TINYGLTF_MODE_LINE_STRIP;
+  // // Primitive (polygons)
+  // polygonsPrimitive.indices = (int)model.accessors.size() - 3;
+  // polygonsPrimitive.attributes["POSITION"] = (int)model.accessors.size() -
+  // 2; polygonsPrimitive.attributes["DATA"] = (int)model.accessors.size() -
+  // 1; polygonsPrimitive.material = (int)model.materials.size() - 1;
+  // polygonsPrimitive.mode = TINYGLTF_MODE_LINE_STRIP;
 
-  // Mesh (polygons)
-  polygonsMesh.name = "Line";
-  std::string polygonsUuid = Utils::uuid();
-  polygonsMesh.extras = tinygltf::Value(
-      {{"uuid", tinygltf::Value(polygonsUuid)}, {"label", tinygltf::Value(1)}});
-  polygonsMesh.primitives.push_back(polygonsPrimitive);
-  model.meshes.push_back(polygonsMesh);
+  // // Mesh (polygons)
+  // polygonsMesh.name = "Line";
+  // std::string polygonsUuid = Utils::uuid();
+  // polygonsMesh.extras = tinygltf::Value(
+  //     {{"uuid", tinygltf::Value(polygonsUuid)}, {"label",
+  //     tinygltf::Value(1)}});
+  // polygonsMesh.primitives.push_back(polygonsPrimitive);
+  // model.meshes.push_back(polygonsMesh);
 
-  // Node (polygons)
-  polygonsNode.mesh = (int)model.meshes.size() - 1;
-  model.nodes.push_back(polygonsNode);
+  // // Node (polygons)
+  // polygonsNode.mesh = (int)model.meshes.size() - 1;
+  // model.nodes.push_back(polygonsNode);
 
   // Model (triangles)
   model.buffers.push_back(trianglesBuffer);
@@ -540,7 +679,7 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   model.nodes.push_back(trianglesNode);
 
   // Scene
-  scene.nodes.push_back((int)model.nodes.size() - 2);
+  // scene.nodes.push_back((int)model.nodes.size() - 2);
   scene.nodes.push_back((int)model.nodes.size() - 1);
 
   scene.name = "master";
@@ -661,7 +800,8 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
 //   bufferViewVertices.byteOffset =
 //       result.triangles.size() * 3 * __SIZEOF_INT__ + paddingLength;
 //   bufferViewVertices.byteLength = result.vertices.size() * 3 *
-//   __SIZEOF_FLOAT__; bufferViewVertices.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+//   __SIZEOF_FLOAT__; bufferViewVertices.target =
+//   TINYGLTF_TARGET_ARRAY_BUFFER;
 //   model.bufferViews.push_back(bufferViewVertices);
 
 //   bufferViewColors.buffer = model.buffers.size() - 1;
@@ -758,7 +898,8 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
 //     return false;
 //   }
 
-//   Logger::DISP("{ \"glb\": \"" + gltfFile + "\", \"name\": \"" + result.name
+//   Logger::DISP("{ \"glb\": \"" + gltfFile + "\", \"name\": \"" +
+//   result.name
 //   +
 //                "\"}");
 
@@ -795,7 +936,8 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
 //                   std::vector<uint> indices = polygon.getIndices();
 
 //                   std::for_each(indices.begin(), indices.end(),
-//                                 [&buffer, &sizeOfPolygons](const uint index)
+//                                 [&buffer, &sizeOfPolygons](const uint
+//                                 index)
 //                                 {
 //                                   sizeOfPolygons++;
 //                                   Utils::uintToBuffer(index, buffer.data);
@@ -846,7 +988,8 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
 //   bufferViewVertices.byteOffset =
 //       sizeOfPolygons * __SIZEOF_INT__ + paddingLength;
 //   bufferViewVertices.byteLength = result.vertices.size() * 3 *
-//   __SIZEOF_FLOAT__; bufferViewVertices.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+//   __SIZEOF_FLOAT__; bufferViewVertices.target =
+//   TINYGLTF_TARGET_ARRAY_BUFFER;
 //   model.bufferViews.push_back(bufferViewVertices);
 
 //   bufferViewColors.buffer = model.buffers.size() - 1;
@@ -943,7 +1086,8 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
 //     return false;
 //   }
 
-//   Logger::DISP("{ \"glb\": \"" + gltfFile + "\", \"name\": \"" + result.name
+//   Logger::DISP("{ \"glb\": \"" + gltfFile + "\", \"name\": \"" +
+//   result.name
 //   +
 //                "\"}");
 
