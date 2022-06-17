@@ -2,9 +2,11 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iostream>
 
 #include "../logger/Logger.hpp"
+#include "../utils/utils.hpp"
 
 /**
  * Constructor
@@ -126,121 +128,85 @@ std::vector<uint> Gmsh::getSurfaceLabels() const {
 }
 
 /**
+ * Index job
+ * @param index Index
+ * @param originalVertices Original vertices
+ * @param vertices Vertices
+ * @param indices Indices
+ * @param set Set function
+ */
+void indexJob(const uint index, const std::vector<Vertex> &originalVertices,
+              std::vector<Vertex> &vertices,
+              std::vector<std::pair<uint, uint>> &indices,
+              const std::function<void(uint)> &set) {
+  auto find = Utils::findIndex(index, indices);
+  if (find == -1) {
+    const auto newIndex = (uint)vertices.size();
+    vertices.push_back(originalVertices.at(index));
+    set(find);
+    indices.push_back({index, newIndex});
+  } else {
+    set(find);
+  }
+}
+
+/**
  * Get surface
  * @param label Label
  * @return Surface
  */
 Surface Gmsh::getSurface(const uint label) const {
   // Surface triangles & vertices
-  std::vector<Triangle> tempSurfaceTriangles;
-  std::vector<Triangle> surfaceTriangles;
-  std::vector<Vertex> surfaceVertices;
+  std::vector<Triangle> tempTriangles;
+  std::vector<Triangle> triangles;
+  std::vector<Vertex> vertices;
 
   // Surface triangles
   std::for_each(this->m_triangles.begin(), this->m_triangles.end(),
-                [label, &tempSurfaceTriangles](const Triangle triangle) {
+                [label, &tempTriangles](const Triangle triangle) {
                   if (triangle.Label() == label) {
-                    tempSurfaceTriangles.push_back(triangle);
+                    tempTriangles.push_back(triangle);
                   }
                 });
 
   // Surface vertices
   std::vector<std::pair<uint, uint>> newIndices;
   std::for_each(
-      tempSurfaceTriangles.begin(), tempSurfaceTriangles.end(),
-      [this, &surfaceVertices, &newIndices,
-       &surfaceTriangles](const Triangle triangle) {
+      tempTriangles.begin(), tempTriangles.end(),
+      [this, &vertices, &newIndices, &triangles](const Triangle triangle) {
         const uint index1 = triangle.I1();
         const uint index2 = triangle.I2();
         const uint index3 = triangle.I3();
 
         Triangle newTriangle;
 
-        auto find1 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index1](const std::pair<uint, uint> newIndex) {
-                           return newIndex.first == index1;
-                         });
-        if (find1 == newIndices.end()) {
-          const uint newIndex1 = surfaceVertices.size();
-          surfaceVertices.push_back(this->m_vertices.at(index1));
-          newTriangle.setI1(newIndex1);
-          newIndices.push_back({index1, newIndex1});
-        } else {
-          newTriangle.setI1((*find1).second);
-        }
+        indexJob(
+            index1, this->m_vertices, vertices, newIndices,
+            [&newTriangle](const uint index) { newTriangle.setI1(index); });
 
-        auto find2 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index2](const std::pair<uint, uint> oldIndex) {
-                           return oldIndex.first == index2;
-                         });
-        if (find2 == newIndices.end()) {
-          const uint newIndex2 = surfaceVertices.size();
-          surfaceVertices.push_back(this->m_vertices.at(index2));
-          newTriangle.setI2(newIndex2);
-          newIndices.push_back({index2, newIndex2});
-        } else {
-          newTriangle.setI2((*find2).second);
-        }
+        indexJob(
+            index2, this->m_vertices, vertices, newIndices,
+            [&newTriangle](const uint index) { newTriangle.setI2(index); });
 
-        auto find3 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index3](const std::pair<uint, uint> oldIndex) {
-                           return oldIndex.first == index3;
-                         });
-        if (find3 == newIndices.end()) {
-          const uint newIndex3 = surfaceVertices.size();
-          surfaceVertices.push_back(this->m_vertices.at(index3));
-          newTriangle.setI3(newIndex3);
-          newIndices.push_back({index3, newIndex3});
-        } else {
-          newTriangle.setI3((*find3).second);
-        }
+        indexJob(
+            index3, this->m_vertices, vertices, newIndices,
+            [&newTriangle](const uint index) { newTriangle.setI3(index); });
 
-        surfaceTriangles.push_back(newTriangle);
+        triangles.push_back(newTriangle);
       });
 
   // min / max
-  uint minIndex = 0; // Min is always 0
-  uint maxIndex = 0;
-  std::for_each(surfaceTriangles.begin(), surfaceTriangles.end(),
-                [&maxIndex](const Triangle triangle) {
-                  const uint index1 = triangle.I1();
-                  const uint index2 = triangle.I2();
-                  const uint index3 = triangle.I3();
-
-                  maxIndex = std::max(
-                      maxIndex, std::max(index1, std::max(index2, index3)));
-                });
-
-  Vertex minVertex(surfaceVertices.size() ? surfaceVertices.at(0)
-                                          : Vertex(0, 0, 0));
-  Vertex maxVertex(surfaceVertices.size() ? surfaceVertices.at(0)
-                                          : Vertex(0, 0, 0));
-  std::for_each(surfaceVertices.begin(), surfaceVertices.end(),
-                [&minVertex, &maxVertex](const Vertex vertex) {
-                  const double x = vertex.X();
-                  const double y = vertex.Y();
-                  const double z = vertex.Z();
-
-                  minVertex.setX(std::min(minVertex.X(), x));
-                  minVertex.setY(std::min(minVertex.Y(), y));
-                  minVertex.setZ(std::min(minVertex.Z(), z));
-
-                  maxVertex.setX(std::max(maxVertex.X(), x));
-                  maxVertex.setY(std::max(maxVertex.Y(), y));
-                  maxVertex.setZ(std::max(maxVertex.Z(), z));
-                });
+  std::vector<uint> minMaxIndex = Utils::minMax(triangles);
+  std::vector<Vertex> minMaxVertex = Utils::minMax(vertices);
 
   Surface surface;
   surface.label = label;
-  surface.minIndex = minIndex;
-  surface.maxIndex = maxIndex;
-  surface.minVertex = minVertex;
-  surface.maxVertex = maxVertex;
-  surface.triangles = surfaceTriangles;
-  surface.vertices = surfaceVertices;
+  surface.minIndex = minMaxIndex.at(0);
+  surface.maxIndex = minMaxIndex.at(1);
+  surface.minVertex = minMaxVertex.at(0);
+  surface.maxVertex = minMaxVertex.at(1);
+  surface.triangles = triangles;
+  surface.vertices = vertices;
 
   return surface;
 }
@@ -252,133 +218,65 @@ Surface Gmsh::getSurface(const uint label) const {
  */
 Volume Gmsh::getVolume(const uint label) const {
   // Volume tethrahedra & vertices
-  std::vector<Tetrahedron> tempVolumeTetrahedra;
-  std::vector<Tetrahedron> volumeTetrahedra;
-  std::vector<Vertex> volumeVertices;
+  std::vector<Tetrahedron> tempTetrahedra;
+  std::vector<Tetrahedron> tetrahedra;
+  std::vector<Vertex> vertices;
 
   // Volume tetrahedra
   std::for_each(this->m_tetrahedra.begin(), this->m_tetrahedra.end(),
-                [label, &tempVolumeTetrahedra](const Tetrahedron tetrahedron) {
+                [label, &tempTetrahedra](const Tetrahedron tetrahedron) {
                   if (tetrahedron.Label() == label) {
-                    tempVolumeTetrahedra.push_back(tetrahedron);
+                    tempTetrahedra.push_back(tetrahedron);
                   }
                 });
 
   // Volume vertices
   std::vector<std::pair<uint, uint>> newIndices;
-  std::for_each(
-      tempVolumeTetrahedra.begin(), tempVolumeTetrahedra.end(),
-      [this, &volumeVertices, &newIndices,
-       &volumeTetrahedra](const Tetrahedron tetrahedron) {
-        const uint index1 = tetrahedron.I1();
-        const uint index2 = tetrahedron.I2();
-        const uint index3 = tetrahedron.I3();
-        const uint index4 = tetrahedron.I4();
+  std::for_each(tempTetrahedra.begin(), tempTetrahedra.end(),
+                [this, &vertices, &newIndices,
+                 &tetrahedra](const Tetrahedron tetrahedron) {
+                  const uint index1 = tetrahedron.I1();
+                  const uint index2 = tetrahedron.I2();
+                  const uint index3 = tetrahedron.I3();
+                  const uint index4 = tetrahedron.I4();
 
-        Tetrahedron newTetrahedron;
+                  Tetrahedron newTetrahedron;
 
-        auto find1 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index1](const std::pair<uint, uint> newIndex) {
-                           return newIndex.first == index1;
-                         });
-        if (find1 == newIndices.end()) {
-          const uint newIndex1 = volumeVertices.size();
-          volumeVertices.push_back(this->m_vertices.at(index1));
-          newTetrahedron.setI1(newIndex1);
-          newIndices.push_back({index1, newIndex1});
-        } else {
-          newTetrahedron.setI1((*find1).second);
-        }
+                  indexJob(index1, this->m_vertices, vertices, newIndices,
+                           [&newTetrahedron](const uint index) {
+                             newTetrahedron.setI1(index);
+                           });
 
-        auto find2 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index2](const std::pair<uint, uint> oldIndex) {
-                           return oldIndex.first == index2;
-                         });
-        if (find2 == newIndices.end()) {
-          const uint newIndex2 = volumeVertices.size();
-          volumeVertices.push_back(this->m_vertices.at(index2));
-          newTetrahedron.setI2(newIndex2);
-          newIndices.push_back({index2, newIndex2});
-        } else {
-          newTetrahedron.setI2((*find2).second);
-        }
+                  indexJob(index2, this->m_vertices, vertices, newIndices,
+                           [&newTetrahedron](const uint index) {
+                             newTetrahedron.setI2(index);
+                           });
 
-        auto find3 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index3](const std::pair<uint, uint> oldIndex) {
-                           return oldIndex.first == index3;
-                         });
-        if (find3 == newIndices.end()) {
-          const uint newIndex3 = volumeVertices.size();
-          volumeVertices.push_back(this->m_vertices.at(index3));
-          newTetrahedron.setI3(newIndex3);
-          newIndices.push_back({index3, newIndex3});
-        } else {
-          newTetrahedron.setI3((*find3).second);
-        }
+                  indexJob(index3, this->m_vertices, vertices, newIndices,
+                           [&newTetrahedron](const uint index) {
+                             newTetrahedron.setI3(index);
+                           });
 
-        auto find4 =
-            std::find_if(newIndices.begin(), newIndices.end(),
-                         [index4](const std::pair<uint, uint> oldIndex) {
-                           return oldIndex.first == index4;
-                         });
-        if (find4 == newIndices.end()) {
-          const uint newIndex4 = volumeVertices.size();
-          volumeVertices.push_back(this->m_vertices.at(index4));
-          newTetrahedron.setI4(newIndex4);
-          newIndices.push_back({index4, newIndex4});
-        } else {
-          newTetrahedron.setI4((*find4).second);
-        }
+                  indexJob(index4, this->m_vertices, vertices, newIndices,
+                           [&newTetrahedron](const uint index) {
+                             newTetrahedron.setI4(index);
+                           });
 
-        volumeTetrahedra.push_back(newTetrahedron);
-      });
+                  tetrahedra.push_back(newTetrahedron);
+                });
 
   // min / max
-  uint minIndex = 0; // Min is always 0
-  uint maxIndex = 0;
-  std::for_each(
-      volumeTetrahedra.begin(), volumeTetrahedra.end(),
-      [&maxIndex](const Tetrahedron tetrahedron) {
-        const uint index1 = tetrahedron.I1();
-        const uint index2 = tetrahedron.I2();
-        const uint index3 = tetrahedron.I3();
-        const uint index4 = tetrahedron.I4();
-
-        maxIndex = std::max(
-            maxIndex,
-            std::max(index1, std::max(index2, std::max(index3, index4))));
-      });
-
-  Vertex minVertex(volumeVertices.size() ? volumeVertices.at(0)
-                                         : Vertex(0, 0, 0));
-  Vertex maxVertex(volumeVertices.size() ? volumeVertices.at(0)
-                                         : Vertex(0, 0, 0));
-  std::for_each(volumeVertices.begin(), volumeVertices.end(),
-                [&minVertex, &maxVertex](const Vertex vertex) {
-                  const double x = vertex.X();
-                  const double y = vertex.Y();
-                  const double z = vertex.Z();
-
-                  minVertex.setX(std::min(minVertex.X(), x));
-                  minVertex.setY(std::min(minVertex.Y(), y));
-                  minVertex.setZ(std::min(minVertex.Z(), z));
-
-                  maxVertex.setX(std::max(maxVertex.X(), x));
-                  maxVertex.setY(std::max(maxVertex.Y(), y));
-                  maxVertex.setZ(std::max(maxVertex.Z(), z));
-                });
+  std::vector<uint> minMaxIndex = Utils::minMax(tetrahedra);
+  std::vector<Vertex> minMaxVertex = Utils::minMax(vertices);
 
   Volume volume;
   volume.label = label;
-  volume.minIndex = minIndex;
-  volume.maxIndex = maxIndex;
-  volume.minVertex = minVertex;
-  volume.maxVertex = maxVertex;
-  volume.tetrahedra = volumeTetrahedra;
-  volume.vertices = volumeVertices;
+  volume.minIndex = minMaxIndex.at(0);
+  volume.maxIndex = minMaxIndex.at(1);
+  volume.minVertex = minMaxVertex.at(0);
+  volume.maxVertex = minMaxVertex.at(1);
+  volume.tetrahedra = tetrahedra;
+  volume.vertices = vertices;
 
   return volume;
 }

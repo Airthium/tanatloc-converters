@@ -12,14 +12,8 @@
 #include <tiny_gltf.h>
 
 Result getMagnitude(const Result &);
-// Surface getMagnitude(const Surface &);
-// Line getMagnitude(const Line &);
 Result getComponent(const Result &, const int);
-// Surface getComponent(const Surface &, const int);
-// Line getComponent(const Line &, const int);
 bool writeOne(const Result &, const std::string &);
-// bool writeOne(const Surface &, const std::string &);
-// bool writeOne(const Line &, const std::string &);
 
 /**
  * VTUToGLTF

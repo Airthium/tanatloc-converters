@@ -1,19 +1,8 @@
 #include "MainDocument.hpp"
 
-#include <uuid/uuid.h>
-
 #include "../logger/Logger.hpp"
 #include <TopoDS_Builder.hxx>
 #include <XCAFDoc_DocumentTool.hxx>
-
-std::string uuid() {
-  uuid_t uuid;
-  char uuidChar[UUID_STR_LEN];
-  uuid_generate_random(uuid);
-  uuid_unparse_upper(uuid, uuidChar);
-
-  return std::string(uuidChar);
-}
 
 /**
  * Constructor

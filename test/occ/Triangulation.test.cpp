@@ -8,5 +8,5 @@
 #include "../../src/occ/Triangulation.hpp"
 
 TEST_CASE("Triangulation") {
-  SECTION("Constructor") { Triangulation triangulation = Triangulation(); }
+  SECTION("Constructor") { auto triangulation = Triangulation(); }
 }

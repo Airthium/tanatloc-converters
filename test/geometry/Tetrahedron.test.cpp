@@ -4,7 +4,7 @@
 
 TEST_CASE("Tetrahedron") {
   SECTION("Constructor 1") {
-    Tetrahedron tetrahedron = Tetrahedron();
+    auto tetrahedron = Tetrahedron();
     CHECK(tetrahedron.I1() == 0);
     CHECK(tetrahedron.I2() == 0);
     CHECK(tetrahedron.I3() == 0);
@@ -25,8 +25,7 @@ TEST_CASE("Tetrahedron") {
     uint index3 = 3;
     uint index4 = 4;
     uint label = 5;
-    Tetrahedron tetrahedron =
-        Tetrahedron(index1, index2, index3, index4, label);
+    auto tetrahedron = Tetrahedron(index1, index2, index3, index4, label);
     CHECK(tetrahedron.I1() == index1);
     CHECK(tetrahedron.I2() == index2);
     CHECK(tetrahedron.I3() == index3);
@@ -46,7 +45,7 @@ TEST_CASE("Tetrahedron") {
     uint index2 = 2;
     uint index3 = 3;
     uint index4 = 4;
-    Tetrahedron tetrahedron = Tetrahedron();
+    auto tetrahedron = Tetrahedron();
     tetrahedron.setI1(index1);
     tetrahedron.setI2(index2);
     tetrahedron.setI3(index3);
@@ -67,7 +66,7 @@ TEST_CASE("Tetrahedron") {
 
   SECTION("setLabel") {
     uint label = 5;
-    Tetrahedron tetrahedron = Tetrahedron();
+    auto tetrahedron = Tetrahedron();
     tetrahedron.setLabel(label);
     CHECK(tetrahedron.I1() == 0);
     CHECK(tetrahedron.I2() == 0);

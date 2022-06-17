@@ -5,6 +5,9 @@
 
 using uint = unsigned int;
 
+/**
+ * Polygon class
+ */
 class Polygon {
 private:
   std::vector<uint> m_indices;

@@ -7,7 +7,7 @@
 #include "../../src/occ/StepReader.hpp"
 
 TEST_CASE("StepReader") {
-  SECTION("Constructor 1") { StepReader stepReader = StepReader(); }
+  SECTION("Constructor 1") { auto stepReader = StepReader(); }
 
   SECTION("Constructor 2") {
     std::string fileName = "fileName";
@@ -40,10 +40,4 @@ TEST_CASE("StepReader") {
 
     CHECK(res);
   }
-
-  // SECTION("getDocument") {
-  //   auto stepReader = StepReader();
-
-  //   stepReader.getMainDocument();
-  // }
 }

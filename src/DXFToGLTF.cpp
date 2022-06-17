@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 
     // Padding
     size_t paddingLength = buffer.data.size() % 4;
-    for (size_t padding; padding < paddingLength; ++padding) {
+    for (size_t padding = 0; padding < paddingLength; ++padding) {
       buffer.data.push_back(0x00);
     }
 
@@ -100,20 +100,20 @@ int main(int argc, char **argv) {
                     double z = vertex.Z();
 
                     // To buffer
-                    Utils::floatToBuffer(x, buffer.data);
-                    Utils::floatToBuffer(y, buffer.data);
-                    Utils::floatToBuffer(z, buffer.data);
+                    Utils::floatToBuffer((float)x, buffer.data);
+                    Utils::floatToBuffer((float)y, buffer.data);
+                    Utils::floatToBuffer((float)z, buffer.data);
                   });
     model.buffers.push_back(buffer);
 
     // Buffer views
-    bufferViewIndices.buffer = model.buffers.size() - 1;
+    bufferViewIndices.buffer = (int)model.buffers.size() - 1;
     bufferViewIndices.byteOffset = 0;
     bufferViewIndices.byteLength = faceMesh.indices.size() * __SIZEOF_INT__;
     bufferViewIndices.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
     model.bufferViews.push_back(bufferViewIndices);
 
-    bufferViewVertices.buffer = model.buffers.size() - 1;
+    bufferViewVertices.buffer = (int)model.buffers.size() - 1;
     bufferViewVertices.byteOffset =
         faceMesh.indices.size() * __SIZEOF_INT__ + paddingLength;
     bufferViewVertices.byteLength =
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
     model.bufferViews.push_back(bufferViewVertices);
 
     // Accessors
-    accessorIndices.bufferView = model.bufferViews.size() - 2;
+    accessorIndices.bufferView = (int)model.bufferViews.size() - 2;
     accessorIndices.byteOffset = 0;
     accessorIndices.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
     accessorIndices.count = faceMesh.indices.size();
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
     accessorIndices.maxValues.push_back(faceMesh.maxIndex);
     model.accessors.push_back(accessorIndices);
 
-    accessorVertices.bufferView = model.bufferViews.size() - 1;
+    accessorVertices.bufferView = (int)model.bufferViews.size() - 1;
     accessorVertices.byteOffset = 0;
     accessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
     accessorVertices.count = faceMesh.vertices.size();
@@ -149,9 +149,9 @@ int main(int argc, char **argv) {
     model.materials.push_back(material);
 
     // Primitive
-    primitive.indices = model.accessors.size() - 2;
-    primitive.attributes["POSITION"] = model.accessors.size() - 1;
-    primitive.material = model.materials.size() - 1;
+    primitive.indices = (int)model.accessors.size() - 2;
+    primitive.attributes["POSITION"] = (int)model.accessors.size() - 1;
+    primitive.material = (int)model.materials.size() - 1;
     primitive.mode = TINYGLTF_MODE_TRIANGLES;
 
     // Mesh
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
                          {"label", tinygltf::Value((int)nFaces)}}));
 
     // Node
-    faceNode.mesh = model.meshes.size() - 1;
+    faceNode.mesh = (int)model.meshes.size() - 1;
 
     TopExp_Explorer edgeExplorer;
     for (edgeExplorer.Init(face, TopAbs_EDGE); edgeExplorer.More();
@@ -221,13 +221,13 @@ int main(int argc, char **argv) {
       model.buffers.push_back(buffer);
 
       // Buffer views
-      bufferViewIndices.buffer = model.buffers.size() - 1;
+      bufferViewIndices.buffer = (int)model.buffers.size() - 1;
       bufferViewIndices.byteOffset = 0;
       bufferViewIndices.byteLength = edgeMesh.indices.size() * __SIZEOF_INT__;
       bufferViewIndices.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
       model.bufferViews.push_back(bufferViewIndices);
 
-      bufferViewVertices.buffer = model.buffers.size() - 1;
+      bufferViewVertices.buffer = (int)model.buffers.size() - 1;
       bufferViewVertices.byteOffset =
           edgeMesh.indices.size() * __SIZEOF_INT__ + paddingLength;
       bufferViewVertices.byteLength =
@@ -236,7 +236,7 @@ int main(int argc, char **argv) {
       model.bufferViews.push_back(bufferViewVertices);
 
       // Accessors
-      accessorIndices.bufferView = model.bufferViews.size() - 2;
+      accessorIndices.bufferView = (int)model.bufferViews.size() - 2;
       accessorIndices.byteOffset = 0;
       accessorIndices.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
       accessorIndices.count = edgeMesh.indices.size();
@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
       accessorIndices.maxValues.push_back(edgeMesh.maxIndex);
       model.accessors.push_back(accessorIndices);
 
-      accessorVertices.bufferView = model.bufferViews.size() - 1;
+      accessorVertices.bufferView = (int)model.bufferViews.size() - 1;
       accessorVertices.byteOffset = 0;
       accessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
       accessorVertices.count = edgeMesh.vertices.size();
@@ -265,9 +265,9 @@ int main(int argc, char **argv) {
       model.materials.push_back(material);
 
       // Primitive
-      primitive.indices = model.accessors.size() - 2;
-      primitive.attributes["POSITION"] = model.accessors.size() - 1;
-      primitive.material = model.materials.size() - 1;
+      primitive.indices = (int)model.accessors.size() - 2;
+      primitive.attributes["POSITION"] = (int)model.accessors.size() - 1;
+      primitive.material = (int)model.materials.size() - 1;
       primitive.mode = TINYGLTF_MODE_TRIANGLES;
 
       // Mesh
@@ -285,23 +285,23 @@ int main(int argc, char **argv) {
                            {"label", tinygltf::Value((int)nEdges)}}));
 
       // Node
-      node.mesh = model.meshes.size() - 1;
+      node.mesh = (int)model.meshes.size() - 1;
 
       // Nodes
       model.nodes.push_back(node);
 
       // Inside solid
-      faceNode.children.push_back(model.nodes.size() - 1);
+      faceNode.children.push_back((int)model.nodes.size() - 1);
 
       // Scene
-      scene.nodes.push_back(model.nodes.size() - 1);
+      scene.nodes.push_back((int)model.nodes.size() - 1);
     }
 
     // Nodes
     model.nodes.push_back(faceNode);
 
     // Scene
-    scene.nodes.push_back(model.nodes.size() - 1);
+    scene.nodes.push_back((int)model.nodes.size() - 1);
   }
 
   // Scene

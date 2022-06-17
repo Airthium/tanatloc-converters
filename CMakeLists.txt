@@ -2,42 +2,45 @@ cmake_minimum_required(VERSION 3.0)
 
 project(Tanatloc)
 
-## Debug
+# # Debug
 option(DEBUG "Print debug informations" OFF)
-if (DEBUG)
+
+if(DEBUG)
   add_definitions(-DDEBUG_MODE)
 else()
   remove_definitions(-DDEBUG_MODE)
 endif()
 
-## Build type
+# # Build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-## External libraries
+# # External libraries
 # VTK
 find_package(VTK COMPONENTS
   IOXML
-REQUIRED)
-if (VTK_FOUND)
+  REQUIRED)
+
+if(VTK_FOUND)
   include_directories(${VTK_INCLUDE_DIRS})
   set(LIBS ${LIBS} ${VTK_LIBRARY_DIRS})
   set(VTK_LIBS ${VTK_LIBRARIES})
-endif (VTK_FOUND)
+endif(VTK_FOUND)
 
 # Catch2
 find_package(Catch2 REQUIRED)
 
 # OpenCASCADE
 find_package(OpenCASCADE REQUIRED)
-if (OpenCASCADE_FOUND)
+
+if(OpenCASCADE_FOUND)
   include_directories(${OpenCASCADE_INCLUDE_DIR})
   set(LIBS ${LIBS} ${OpenCASCADE_LIBRARY_DIR})
   set(OCC_LIBS ${OpenCASCADE_LIBRARIES})
-endif (OpenCASCADE_FOUND)
+endif(OpenCASCADE_FOUND)
 
 # UUID
 find_path(LIBUUID_INCLUDE_DIR uuid.h PATH_SUFFIXES uuid)
@@ -49,7 +52,7 @@ link_libraries(${VTK_LIBS} ${OCC_LIBS} ${LIBUUID_LIBS})
 # TinyGLTF
 find_package(TinyGLTF REQUIRED)
 
-## Libraries
+# # Libraries
 # DXF
 AUX_SOURCE_DIRECTORY(src/dxf DXF_SOURCE)
 
@@ -65,16 +68,16 @@ AUX_SOURCE_DIRECTORY(src/gmsh GMSH_SOURCE)
 # Logger
 AUX_SOURCE_DIRECTORY(src/logger LOGGER_SOURCE)
 
+# Utils
+AUX_SOURCE_DIRECTORY(src/utils UTILS_SOURCE)
+
 # OCC
 AUX_SOURCE_DIRECTORY(src/occ OCC_SOURCE)
-
-# Utils
-AUX_SOURCE_DIRECTORY(src/vtk UTILS_SOURCE)
 
 # VTK
 AUX_SOURCE_DIRECTORY(src/vtk VTK_SOURCE)
 
-## Sources
+# # Sources
 # DXFToGLTF
 set(DXFToGLTFSOURCE
   src/DXFToGLTF.cpp
@@ -83,6 +86,7 @@ set(DXFToGLTFSOURCE
   ${GEOMETRY_SOURCE}
   ${LOGGER_SOURCE}
   ${OCC_SOURCE}
+  ${UTILS_SOURCE}
 )
 
 # StepToGLTF
@@ -91,6 +95,7 @@ set(StepToGLTFSOURCE
   ${GEOMETRY_SOURCE}
   ${LOGGER_SOURCE}
   ${OCC_SOURCE}
+  ${UTILS_SOURCE}
 )
 
 # GmshToGLTF
@@ -98,41 +103,37 @@ set(GmshToGLTFSOURCE
   src/GmshToGLTF.cpp
   ${GEOMETRY_SOURCE}
   ${GMSH_SOURCE}
-  ${UTILS_SOURCE}
   ${LOGGER_SOURCE}
+  ${UTILS_SOURCE}
 )
 
 # VTUToGLTF
 set(VTUToGLTFSOURCE
   src/VTUToGLTF.cpp
   ${GEOMETRY_SOURCE}
-  ${GMSH_SOURCE}
   ${LOGGER_SOURCE}
   ${OCC_SOURCE}
+  ${UTILS_SOURCE}
   ${VTK_SOURCE}
 )
 
-## Executables
+# # Executables
 # DXFToGLTF
 add_executable(DXFToGLTF ${DXFToGLTFSOURCE})
-target_link_libraries(DXFToGLTF)
 
 # StepToGLTF
 add_executable(StepToGLTF ${StepToGLTFSOURCE})
-target_link_libraries(StepToGLTF)
 
 # GmshToGLTF
 add_executable(GmshToGLTF ${GmshToGLTFSOURCE})
-target_link_libraries(GmshToGLTF)
 
 # VTUToGLTF
 add_executable(VTUToGLTF ${VTUToGLTFSOURCE})
-target_link_libraries(VTUToGLTF)
 
-## Install
+# # Install
 install(TARGETS DXFToGLTF StepToGLTF GmshToGLTF VTUToGLTF)
 
-## Tests
+# # Tests
 include(CTest)
 include(Catch)
 
@@ -140,11 +141,14 @@ set(LOGGER_TESTS
   test/logger/Logger.test.cpp
 )
 
+set(GEOMETRY_TESTS
+  test/geometry/Tetrahedron.test.cpp
+  test/geometry/Triangle.test.cpp
+  test/geometry/Vertex.test.cpp
+)
+
 set(GMSH_TESTS
   test/gmsh/Gmsh.test.cpp
-  test/gmsh/Tetrahedron.test.cpp
-  test/gmsh/Triangle.test.cpp
-  test/gmsh/Vertex.test.cpp
 )
 
 set(OCC_TESTS
@@ -162,17 +166,19 @@ set(DXF_TESTS
 
 set(SOURCE_TESTS
   test/main.cpp
+  ${DXF_TESTS}
+  ${GEOMETRY_TESTS}
   ${GMSH_TESTS}
   ${LOGGER_TESTS}
   ${OCC_TESTS}
   ${VTK_TESTS}
-  ${DXF_TESTS}
   ${DXF_SOURCE}
   ${DXFLib_SOURCE}
   ${GEOMETRY_SOURCE}
   ${GMSH_SOURCE}
   ${LOGGER_SOURCE}
   ${OCC_SOURCE}
+  ${UTILS_SOURCE}
   ${VTK_SOURCE}
 )
 
@@ -180,11 +186,12 @@ add_executable(tests ${SOURCE_TESTS})
 target_link_libraries(tests Catch2::Catch2)
 catch_discover_tests(tests)
 
-## Coverage
+# # Coverage
 option(COVERAGE "Enable coverage flags" OFF)
-if (COVERAGE)
+
+if(COVERAGE)
   SET(CMAKE_CXX_FLAGS "-O0 --coverage -W")
-  
+
   add_custom_target(coverage
     COMMAND make clean
     COMMAND make -j"$(nproc)"
@@ -209,4 +216,3 @@ if (COVERAGE)
     COMMAND genhtml -o ../coverage -t "Converters coverage" report.info
   )
 endif()
-
