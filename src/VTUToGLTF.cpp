@@ -52,9 +52,6 @@ int main(int argc, char *argv[]) {
 
   for (size_t i = 0; i < results.size(); i++) {
     Result result = results.at(i);
-    // std::for_each(
-    //     results.begin(), results.end(), [&genericGltfFile](const Result
-    //     &result) {
     if (result.size == 1) { // Scalar
       bool status =
           writeOne(result, genericGltfFile + "_" + result.name + ".glb");
@@ -517,85 +514,84 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
                   Utils::floatToBuffer((float)value, trianglesBuffer.data);
                 });
 
-  // // Model (polygons)
-  // model.buffers.push_back(polygonsBuffer);
+  // Model (polygons)
+  model.buffers.push_back(polygonsBuffer);
 
-  // // Buffer views (polygons)
-  // polygonsBufferViewIndices.buffer = (int)model.buffers.size() - 1;
-  // polygonsBufferViewIndices.byteOffset = 0;
-  // polygonsBufferViewIndices.byteLength = sizeOfPolygons * __SIZEOF_INT__;
-  // polygonsBufferViewIndices.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
-  // model.bufferViews.push_back(polygonsBufferViewIndices);
+  // Buffer views (polygons)
+  polygonsBufferViewIndices.buffer = (int)model.buffers.size() - 1;
+  polygonsBufferViewIndices.byteOffset = 0;
+  polygonsBufferViewIndices.byteLength = sizeOfPolygons * __SIZEOF_INT__;
+  polygonsBufferViewIndices.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+  model.bufferViews.push_back(polygonsBufferViewIndices);
 
-  // polygonsBufferViewVertices.buffer = (int)model.buffers.size() - 1;
-  // polygonsBufferViewVertices.byteOffset =
-  //     sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength;
-  // polygonsBufferViewVertices.byteLength =
-  //     result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__;
-  // polygonsBufferViewVertices.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-  // model.bufferViews.push_back(polygonsBufferViewVertices);
+  polygonsBufferViewVertices.buffer = (int)model.buffers.size() - 1;
+  polygonsBufferViewVertices.byteOffset =
+      sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength;
+  polygonsBufferViewVertices.byteLength =
+      result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__;
+  polygonsBufferViewVertices.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+  model.bufferViews.push_back(polygonsBufferViewVertices);
 
-  // polygonsBufferViewColors.buffer = (int)model.buffers.size() - 1;
-  // polygonsBufferViewColors.byteOffset =
-  //     sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength +
-  //     result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__ +
-  //     polygonsPaddingLength2;
-  // polygonsBufferViewColors.byteLength =
-  //     result.polygonsValues.size() * __SIZEOF_FLOAT__;
-  // polygonsBufferViewColors.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-  // model.bufferViews.push_back(polygonsBufferViewColors);
+  polygonsBufferViewColors.buffer = (int)model.buffers.size() - 1;
+  polygonsBufferViewColors.byteOffset =
+      sizeOfPolygons * __SIZEOF_INT__ + polygonsPaddingLength +
+      result.polygonsVertices.size() * 3 * __SIZEOF_FLOAT__ +
+      polygonsPaddingLength2;
+  polygonsBufferViewColors.byteLength =
+      result.polygonsValues.size() * __SIZEOF_FLOAT__;
+  polygonsBufferViewColors.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+  model.bufferViews.push_back(polygonsBufferViewColors);
 
-  // // Accessors (polygons)
-  // polygonsAccessorIndices.bufferView = (int)model.bufferViews.size() - 3;
-  // polygonsAccessorIndices.byteOffset = 0;
-  // polygonsAccessorIndices.componentType =
-  // TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT; polygonsAccessorIndices.count =
-  // sizeOfPolygons; polygonsAccessorIndices.type = TINYGLTF_TYPE_SCALAR;
-  // polygonsAccessorIndices.minValues.push_back(result.polygonsMinIndex);
-  // polygonsAccessorIndices.maxValues.push_back(result.polygonsMaxIndex);
-  // model.accessors.push_back(polygonsAccessorIndices);
+  // Accessors (polygons)
+  polygonsAccessorIndices.bufferView = (int)model.bufferViews.size() - 3;
+  polygonsAccessorIndices.byteOffset = 0;
+  polygonsAccessorIndices.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+  polygonsAccessorIndices.count = sizeOfPolygons;
+  polygonsAccessorIndices.type = TINYGLTF_TYPE_SCALAR;
+  polygonsAccessorIndices.minValues.push_back(result.polygonsMinIndex);
+  polygonsAccessorIndices.maxValues.push_back(result.polygonsMaxIndex);
+  model.accessors.push_back(polygonsAccessorIndices);
 
-  // polygonsAccessorVertices.bufferView = (int)model.bufferViews.size() - 2;
-  // polygonsAccessorVertices.byteOffset = 0;
-  // polygonsAccessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-  // polygonsAccessorVertices.count = result.polygonsVertices.size();
-  // polygonsAccessorVertices.type = TINYGLTF_TYPE_VEC3;
-  // polygonsAccessorVertices.minValues = {result.polygonsMinVertex.X(),
-  //                                       result.polygonsMinVertex.Y(),
-  //                                       result.polygonsMinVertex.Z()};
-  // polygonsAccessorVertices.maxValues = {result.polygonsMaxVertex.X(),
-  //                                       result.polygonsMaxVertex.Y(),
-  //                                       result.polygonsMaxVertex.Z()};
-  // model.accessors.push_back(polygonsAccessorVertices);
+  polygonsAccessorVertices.bufferView = (int)model.bufferViews.size() - 2;
+  polygonsAccessorVertices.byteOffset = 0;
+  polygonsAccessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+  polygonsAccessorVertices.count = result.polygonsVertices.size();
+  polygonsAccessorVertices.type = TINYGLTF_TYPE_VEC3;
+  polygonsAccessorVertices.minValues = {result.polygonsMinVertex.X(),
+                                        result.polygonsMinVertex.Y(),
+                                        result.polygonsMinVertex.Z()};
+  polygonsAccessorVertices.maxValues = {result.polygonsMaxVertex.X(),
+                                        result.polygonsMaxVertex.Y(),
+                                        result.polygonsMaxVertex.Z()};
+  model.accessors.push_back(polygonsAccessorVertices);
 
-  // polygonsAccessorColors.bufferView = (int)model.bufferViews.size() - 1;
-  // polygonsAccessorColors.byteOffset = 0;
-  // polygonsAccessorColors.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-  // polygonsAccessorColors.count = result.polygonsValues.size();
-  // polygonsAccessorColors.type = TINYGLTF_TYPE_SCALAR;
-  // polygonsAccessorColors.minValues.push_back(result.polygonsMinValue);
-  // polygonsAccessorColors.maxValues.push_back(result.polygonsMaxValue);
-  // model.accessors.push_back(polygonsAccessorColors);
+  polygonsAccessorColors.bufferView = (int)model.bufferViews.size() - 1;
+  polygonsAccessorColors.byteOffset = 0;
+  polygonsAccessorColors.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+  polygonsAccessorColors.count = result.polygonsValues.size();
+  polygonsAccessorColors.type = TINYGLTF_TYPE_SCALAR;
+  polygonsAccessorColors.minValues.push_back(result.polygonsMinValue);
+  polygonsAccessorColors.maxValues.push_back(result.polygonsMaxValue);
+  model.accessors.push_back(polygonsAccessorColors);
 
-  // // Primitive (polygons)
-  // polygonsPrimitive.indices = (int)model.accessors.size() - 3;
-  // polygonsPrimitive.attributes["POSITION"] = (int)model.accessors.size() -
-  // 2; polygonsPrimitive.attributes["DATA"] = (int)model.accessors.size() -
-  // 1; polygonsPrimitive.material = (int)model.materials.size() - 1;
-  // polygonsPrimitive.mode = TINYGLTF_MODE_LINE_STRIP;
+  // Primitive (polygons)
+  polygonsPrimitive.indices = (int)model.accessors.size() - 3;
+  polygonsPrimitive.attributes["POSITION"] = (int)model.accessors.size() - 2;
+  polygonsPrimitive.attributes["DATA"] = (int)model.accessors.size() - 1;
+  polygonsPrimitive.material = (int)model.materials.size() - 1;
+  polygonsPrimitive.mode = TINYGLTF_MODE_LINE_STRIP;
 
-  // // Mesh (polygons)
-  // polygonsMesh.name = "Line";
-  // std::string polygonsUuid = Utils::uuid();
-  // polygonsMesh.extras = tinygltf::Value(
-  //     {{"uuid", tinygltf::Value(polygonsUuid)}, {"label",
-  //     tinygltf::Value(1)}});
-  // polygonsMesh.primitives.push_back(polygonsPrimitive);
-  // model.meshes.push_back(polygonsMesh);
+  // Mesh (polygons)
+  polygonsMesh.name = "Line";
+  std::string polygonsUuid = Utils::uuid();
+  polygonsMesh.extras = tinygltf::Value(
+      {{"uuid", tinygltf::Value(polygonsUuid)}, {"label", tinygltf::Value(1)}});
+  polygonsMesh.primitives.push_back(polygonsPrimitive);
+  model.meshes.push_back(polygonsMesh);
 
-  // // Node (polygons)
-  // polygonsNode.mesh = (int)model.meshes.size() - 1;
-  // model.nodes.push_back(polygonsNode);
+  // Node (polygons)
+  polygonsNode.mesh = (int)model.meshes.size() - 1;
+  model.nodes.push_back(polygonsNode);
 
   // Model (triangles)
   model.buffers.push_back(trianglesBuffer);
@@ -679,7 +675,7 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   model.nodes.push_back(trianglesNode);
 
   // Scene
-  // scene.nodes.push_back((int)model.nodes.size() - 2);
+  scene.nodes.push_back((int)model.nodes.size() - 2);
   scene.nodes.push_back((int)model.nodes.size() - 1);
 
   scene.name = "master";
@@ -690,9 +686,9 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
        {"faces", tinygltf::Value({{"name", tinygltf::Value(trianglesMesh.name)},
                                   {"uuid", tinygltf::Value(trianglesUuid)},
                                   {"label", tinygltf::Value(1)}})},
-       /*{"edges", tinygltf::Value({{"name", tinygltf::Value(polygonsMesh.name)},
+       {"edges", tinygltf::Value({{"name", tinygltf::Value(polygonsMesh.name)},
                                   {"uuid", tinygltf::Value(polygonsUuid)},
-                                  {"label", tinygltf::Value(1)}})}*/});
+                                  {"label", tinygltf::Value(1)}})}});
 
   // Scenes
   model.scenes.push_back(scene);
