@@ -72,7 +72,7 @@ FaceMesh Triangulation::triangulateFace(const TopoDS_Shape &face) const {
 
   if (triangulation.IsNull()) {
     Logger::ERROR("Null triangulation");
-    return faceMesh;
+    return FaceMesh();
   }
   Poly_Connect pc(triangulation);
 
