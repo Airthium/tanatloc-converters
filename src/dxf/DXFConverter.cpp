@@ -36,6 +36,8 @@ bool DXFConverter::convert() {
   if (!file)
     return false;
 
+  // https://images.autodesk.com/adsk/files/autocad_2012_pdf_dxf-reference_enu.pdf
+
   std::string line;
   while (std::getline(file, line)) {
     if (line == "LINE") {
@@ -43,9 +45,9 @@ bool DXFConverter::convert() {
     } else if (line == "CIRCLE") {
       this->processCircle(file);
     } else if (line == "ARC") {
-      std::cerr << "Not implemented yet" << std::endl;
+      std::cerr << "ARC Not implemented yet" << std::endl;
     } else if (line == "POLYLINE") {
-      std::cerr << "Not implemented yet" << std::endl;
+      this->processPolyline(file);
     }
   }
 
@@ -66,6 +68,7 @@ TopoDS_Compound DXFConverter::getCompound() const { return this->m_compound; }
 void DXFConverter::clear() {
   this->m_lines.clear();
   this->m_circles.clear();
+  this->m_polylines.clear();
 
   this->m_wires.clear();
   this->m_faces.clear();
@@ -74,7 +77,7 @@ void DXFConverter::clear() {
 void DXFConverter::processLine(std::ifstream &file) {
   Logger::DEBUG("Process LINE");
 
-  Line newLine;
+  DXFLine newLine;
 
   std::string line;
   bool start = false;
@@ -107,7 +110,7 @@ void DXFConverter::processLine(std::ifstream &file) {
 void DXFConverter::processCircle(std::ifstream &file) {
   Logger::DEBUG("Process CIRCLE");
 
-  Circle newCircle;
+  DXFCircle newCircle;
 
   std::string line;
   bool start = false;
@@ -132,6 +135,43 @@ void DXFConverter::processCircle(std::ifstream &file) {
   this->m_circles.push_back(newCircle);
 }
 
+DXFVertex DXFConverter::processVertex(std::ifstream &file) const {
+  Logger::DEBUG("Process VERTEX");
+
+  DXFVertex newVertex;
+
+  std::string line;
+  while (std::getline(file, line)) {
+    if (line == TAG10) {
+      file >> newVertex.x;
+    } else if (line == TAG20) {
+      file >> newVertex.y;
+    } else if (line == TAG30) {
+      file >> newVertex.z;
+    } else if (line == TAG0)
+      break;
+  }
+
+  return newVertex;
+}
+
+void DXFConverter::processPolyline(std::ifstream &file) {
+  Logger::DEBUG("Process POLYLINE");
+
+  DXFPolyline newPolyline;
+
+  std::string line;
+  while (std::getline(file, line)) {
+    if (line == VERTEX) {
+      DXFVertex vertex = processVertex(file);
+      newPolyline.vertices.push_back(vertex);
+    } else if (line == SEQEND)
+      break;
+  }
+
+  this->m_polylines.push_back(newPolyline);
+}
+
 void DXFConverter::process() {
   Logger::DEBUG("Process");
 
@@ -145,11 +185,10 @@ void DXFConverter::process() {
       this->m_circles.end());
 
   // Build wires
-
   auto wireBuilder = BRepBuilderAPI_MakeWire();
   std::for_each(
       this->m_lines.begin(), this->m_lines.end(),
-      [&wireBuilder](const Line &line) {
+      [&wireBuilder](const DXFLine &line) {
         gp_Pnt point1(line.x1, line.y1, line.z1);
         gp_Pnt point2(line.x2, line.y2, line.z2);
 
@@ -179,11 +218,11 @@ void DXFConverter::process() {
           }
         }
       });
-
-  this->m_wires.push_back(wireBuilder.Wire());
+  if (wireBuilder.IsDone())
+    this->m_wires.push_back(wireBuilder.Wire());
 
   std::for_each(this->m_circles.begin(), this->m_circles.end(),
-                [this](const Circle &circle) {
+                [this](const DXFCircle &circle) {
                   gp_Circ occCircle;
                   gp_Pnt center(circle.x, circle.y, circle.z);
                   occCircle.SetLocation(center);
@@ -198,6 +237,34 @@ void DXFConverter::process() {
                   this->m_wires.push_back(occWire);
                 });
 
+  std::for_each(this->m_polylines.begin(), this->m_polylines.end(),
+                [this](const DXFPolyline &polyline) {
+                  const uint size = polyline.vertices.size();
+
+                  auto wireBuilder = BRepBuilderAPI_MakeWire();
+                  for (uint i = 0; i < size; ++i) {
+                    const DXFVertex v1 = polyline.vertices.at(i);
+                    const DXFVertex v2 = polyline.vertices.at((i + 1) % size);
+
+                    gp_Pnt point1(v1.x, v1.y, v1.z);
+                    gp_Pnt point2(v2.x, v2.y, v2.z);
+
+                    BRepBuilderAPI_MakeVertex vertexBuilder1(point1);
+                    BRepBuilderAPI_MakeVertex vertexBuilder2(point2);
+
+                    TopoDS_Vertex vertex1 = vertexBuilder1.Vertex();
+                    TopoDS_Vertex vertex2 = vertexBuilder2.Vertex();
+
+                    auto edgeBuilder =
+                        BRepBuilderAPI_MakeEdge(vertex1, vertex2);
+                    TopoDS_Edge edge = edgeBuilder.Edge();
+
+                    wireBuilder.Add(edge);
+                  }
+
+                  this->m_wires.push_back(wireBuilder.Wire());
+                });
+
   // Build faces
   std::for_each(this->m_wires.begin(), this->m_wires.end(),
                 [this](const TopoDS_Wire &wire) {
@@ -207,18 +274,13 @@ void DXFConverter::process() {
                   this->m_faces.push_back(face);
                 });
 
-  std::cout << this->m_faces.size() << std::endl;
-
   // Build compound
   BRep_Builder builder;
   builder.MakeCompound(this->m_compound);
-  for (uint i = 0; i < this->m_faces.size(); ++i) {
-    builder.Add(this->m_compound, this->m_faces[i]);
-  }
-  // std::for_each(this->m_faces.begin(), this->m_faces.end(),
-  //               [this, builder](const TopoDS_Shape &face) {
-  //                 builder.Add(this->m_compound, face);
-  //               });
+  std::for_each(this->m_faces.begin(), this->m_faces.end(),
+                [this, builder](const TopoDS_Shape &face) {
+                  builder.Add(this->m_compound, face);
+                });
 
   this->clear();
 }

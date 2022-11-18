@@ -1,7 +1,7 @@
 #ifndef _DXF_CIRCLE_
 #define _DXF_CIRCLE_
 
-class Circle {
+class DXFCircle {
 public:
   float x = 0.;
   float y = 0.;
@@ -10,7 +10,7 @@ public:
   float r = 0.;
 
   // Operator ==
-  friend bool operator==(const Circle &circle1, const Circle &circle2) {
+  friend bool operator==(const DXFCircle &circle1, const DXFCircle &circle2) {
     return (circle1.x == circle2.x) && (circle1.y == circle2.y) &&
            (circle1.z == circle2.z) && (circle1.r == circle2.r);
   }
