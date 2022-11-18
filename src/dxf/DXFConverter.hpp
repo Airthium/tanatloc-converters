@@ -3,39 +3,48 @@
 
 #include <vector>
 
-#include "../dxflib/dl_creationadapter.h"
 #include <TopoDS_Compound.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Wire.hxx>
 
-class DXFConverter : public DL_CreationAdapter {
-private:
-  std::string m_input = "";
-  std::string m_output = "";
+#include "./lib/Circle.hpp"
+#include "./lib/Line.hpp"
 
-  std::vector<DL_VertexData> m_vertices;
+const std::string TAG0 = "  0";
+const std::string TAG10 = " 10";
+const std::string TAG11 = " 11";
+const std::string TAG20 = " 20";
+const std::string TAG21 = " 21";
+const std::string TAG30 = " 30";
+const std::string TAG31 = " 31";
+const std::string TAG40 = " 40";
+
+class DXFConverter {
+private:
+  std::string m_input;
+
+  std::vector<Line> m_lines;
+  std::vector<Circle> m_circles;
+
   std::vector<TopoDS_Wire> m_wires;
   std::vector<TopoDS_Shape> m_faces;
 
   TopoDS_Compound m_compound;
 
-  void processCodeValuePair(unsigned int, const std::string &) override;
-  void addLine(const DL_LineData &) override;
+  // Clear
+  void clear();
 
-  void addArc(const DL_ArcData &) override;
-  void addCircle(const DL_CircleData &) override;
+  // Process line
+  void processLine(std::ifstream &);
 
-  void addPolyline(const DL_PolylineData &) override;
-  void addVertex(const DL_VertexData &) override;
+  // Process circle
+  void processCircle(std::ifstream &);
 
-  void endEntity() override;
-
-  void buildWire();
-  void buildFace();
-  void buildCompound();
+  // Process
+  void process();
 
 public:
-  // Contructor
+  // Constructor
   DXFConverter();
 
   // Set input
@@ -48,4 +57,4 @@ public:
   TopoDS_Compound getCompound() const;
 };
 
-#endif //_DXF_CONVERTER_
+#endif
