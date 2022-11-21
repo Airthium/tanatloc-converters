@@ -62,9 +62,6 @@ private:
   // Remove doubles
   void removeDoubles();
 
-  // Is connected
-  bool isConnected(const TopoDS_Edge, const gp_Pnt) const;
-
   // Process
   void process();
 

@@ -217,7 +217,7 @@ void triangleJob(const VTUData &data, const Triangle triangle,
  * @param values Values
  * @param indices Indices
  */
-void polygonJob(const VTUData &data, const Polygon polygon,
+void polygonJob(const VTUData &data, const Polygon &polygon,
                 std::vector<Polygon> &polygons, std::vector<Vertex> &vertices,
                 std::vector<double> &values,
                 std::vector<std::pair<uint, uint>> &indices) {
@@ -259,7 +259,7 @@ std::vector<Result> VTUReader::getResults() const {
     std::vector<std::pair<uint, uint>> polygonsIndices;
     std::for_each(tempPloygons.begin(), tempPloygons.end(),
                   [data, &polygons, &polygonsVertices, &polygonsValues,
-                   &polygonsIndices](const Polygon polygon) {
+                   &polygonsIndices](const Polygon &polygon) {
                     polygonJob(data, polygon, polygons, polygonsVertices,
                                polygonsValues, polygonsIndices);
                   });
@@ -268,7 +268,7 @@ std::vector<Result> VTUReader::getResults() const {
     std::vector<std::pair<uint, uint>> trianglesIndices;
     std::for_each(tempTriangles.begin(), tempTriangles.end(),
                   [data, &triangles, &trianglesVertices, &trianglesValues,
-                   &trianglesIndices](const Triangle triangle) {
+                   &trianglesIndices](const Triangle &triangle) {
                     triangleJob(data, triangle, triangles, trianglesVertices,
                                 trianglesValues, trianglesIndices);
                   });

@@ -84,7 +84,7 @@ std::vector<uint> minMax(const std::vector<Tetrahedron> &tetrahedra) {
 
   std::for_each(
       tetrahedra.begin(), tetrahedra.end(),
-      [&max](const Tetrahedron tetrahedron) {
+      [&max](const Tetrahedron &tetrahedron) {
         const uint index1 = tetrahedron.I1();
         const uint index2 = tetrahedron.I2();
         const uint index3 = tetrahedron.I3();
@@ -129,7 +129,7 @@ std::vector<uint> minMax(const std::vector<Polygon> &polygons) {
 
   // Polygons
   std::for_each(
-      polygons.begin(), polygons.end(), [&max](const Polygon polygon) {
+      polygons.begin(), polygons.end(), [&max](const Polygon &polygon) {
         const std::vector<uint> indices = polygon.getIndices();
         max = std::max(max, *std::max_element(indices.begin(), indices.end()));
       });
@@ -147,7 +147,7 @@ std::vector<Vertex> minMax(const std::vector<Vertex> &vertices) {
   Vertex max(vertices.size() ? vertices.at(0) : Vertex(0, 0, 0));
 
   std::for_each(vertices.begin(), vertices.end(),
-                [&min, &max](const Vertex vertex) {
+                [&min, &max](const Vertex &vertex) {
                   const double x = vertex.X();
                   const double y = vertex.Y();
                   const double z = vertex.Z();

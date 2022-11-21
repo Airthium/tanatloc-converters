@@ -18,7 +18,7 @@ std::vector<double> generateColor();
  * @param argv
  * @return int
  */
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   bool res;
   uint i;
   std::string meshFile;
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
         // Vertices
         std::for_each(surface.vertices.begin(), surface.vertices.end(),
-                      [&buffer](const Vertex vertex) {
+                      [&buffer](const Vertex &vertex) {
                         double x = vertex.X();
                         double y = vertex.Y();
                         double z = vertex.Z();

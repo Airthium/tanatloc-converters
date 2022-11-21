@@ -6,8 +6,8 @@
 class DXFArc {
 public:
   DXFCircle circle;
-  float startAngle;
-  float endAngle;
+  float startAngle = 0.;
+  float endAngle = 0.;
 
   // Operator ==
   friend bool operator==(const DXFArc &arc1, const DXFArc &arc2) {

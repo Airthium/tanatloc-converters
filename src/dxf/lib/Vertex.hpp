@@ -3,9 +3,9 @@
 
 class DXFVertex {
 public:
-  float x;
-  float y;
-  float z;
+  float x = 0.;
+  float y = 0.;
+  float z = 0.;
 
   // Operator ==
   friend bool operator==(const DXFVertex &vertex1, const DXFVertex &vertex2) {

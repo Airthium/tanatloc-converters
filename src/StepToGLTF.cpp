@@ -19,7 +19,7 @@
  * @param argv
  * @return int
  */
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   bool res;
   std::string stepFile;
   std::string gltfFile;
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 
       // Vertices
       std::for_each(faceMesh.vertices.begin(), faceMesh.vertices.end(),
-                    [&buffer](const Vertex vertex) {
+                    [&buffer](const Vertex &vertex) {
                       double x = vertex.X() * 1.e-3; // mm to m
                       double y = vertex.Y() * 1.e-3; // mm to m
                       double z = vertex.Z() * 1.e-3; // mm to m

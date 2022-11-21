@@ -207,7 +207,7 @@ if(COVERAGE)
     COMMAND ./VTUToGLTF ../test/assets/Result.vtu Result || true
     COMMAND ./VTUToGLTF ../test/assets/Result2Pieces.vtu Result || true
     COMMAND lcov --directory . -c -o report0.info
-    COMMAND lcov --remove report0.info '/usr/include/*' '/usr/local/include/*' '*/dxflib/*' -o report.info
+    COMMAND lcov --remove report0.info '/usr/include/*' '/usr/local/include/*' '/usr/lib/*' -o report.info
     COMMAND genhtml -o ../coverage -t "Converters coverage" report.info
   )
 endif()

@@ -21,7 +21,7 @@ bool writeOne(const Result &, const std::string &);
  * @param argv
  * @return int
  */
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   bool res;
   std::string vtuFile;
   std::string genericGltfFile;
@@ -233,7 +233,7 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   // Indices (polygons)
   uint sizeOfPolygons = 0;
   std::for_each(result.polygons.begin(), result.polygons.end(),
-                [&polygonsBuffer, &sizeOfPolygons](const Polygon polygon) {
+                [&polygonsBuffer, &sizeOfPolygons](const Polygon &polygon) {
                   std::vector<uint> indices = polygon.getIndices();
 
                   std::for_each(
@@ -252,7 +252,7 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
 
   // Vertices (polygons)
   std::for_each(result.polygonsVertices.begin(), result.polygonsVertices.end(),
-                [&polygonsBuffer](const Vertex vertex) {
+                [&polygonsBuffer](const Vertex &vertex) {
                   double x = vertex.X();
                   double y = vertex.Y();
                   double z = vertex.Z();
@@ -298,7 +298,7 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   // Vertices (triangles)
   std::for_each(result.trianglesVertices.begin(),
                 result.trianglesVertices.end(),
-                [&trianglesBuffer](const Vertex vertex) {
+                [&trianglesBuffer](const Vertex &vertex) {
                   double x = vertex.X();
                   double y = vertex.Y();
                   double z = vertex.Z();

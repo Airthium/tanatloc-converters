@@ -9,9 +9,9 @@
 constexpr double meshQuality = 1.e-3;
 
 struct FaceMesh {
-  uint label;
-  uint minIndex;
-  uint maxIndex;
+  uint label = 0;
+  uint minIndex = 0;
+  uint maxIndex = 0;
   Vertex minVertex;
   Vertex maxVertex;
   std::vector<uint> indices;

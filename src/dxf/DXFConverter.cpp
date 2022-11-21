@@ -259,19 +259,6 @@ void DXFConverter::removeDoubles() {
       this->m_polylines.end());
 }
 
-bool DXFConverter::isConnected(const TopoDS_Edge lastEdge,
-                               const gp_Pnt point1) const {
-  if (lastEdge.IsNull())
-    return true;
-
-  TopExp_Explorer explorer(lastEdge, TopAbs_VERTEX);
-  explorer.Next();
-  gp_Pnt lastVertex = BRep_Tool::Pnt(TopoDS::Vertex(explorer.Current()));
-
-  return (lastVertex.X() == point1.X()) && (lastVertex.Y() == point1.Y()) &&
-         (lastVertex.Z() == point1.Z());
-}
-
 void DXFConverter::process() {
   Logger::DEBUG("Process");
 

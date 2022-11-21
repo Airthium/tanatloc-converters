@@ -224,7 +224,7 @@ Volume Gmsh::getVolume(const uint label) const {
 
   // Volume tetrahedra
   std::for_each(this->m_tetrahedra.begin(), this->m_tetrahedra.end(),
-                [label, &tempTetrahedra](const Tetrahedron tetrahedron) {
+                [label, &tempTetrahedra](const Tetrahedron &tetrahedron) {
                   if (tetrahedron.Label() == label) {
                     tempTetrahedra.push_back(tetrahedron);
                   }
@@ -234,7 +234,7 @@ Volume Gmsh::getVolume(const uint label) const {
   std::vector<std::pair<uint, uint>> newIndices;
   std::for_each(tempTetrahedra.begin(), tempTetrahedra.end(),
                 [this, &vertices, &newIndices,
-                 &tetrahedra](const Tetrahedron tetrahedron) {
+                 &tetrahedra](const Tetrahedron &tetrahedron) {
                   const uint index1 = tetrahedron.I1();
                   const uint index2 = tetrahedron.I2();
                   const uint index3 = tetrahedron.I3();
