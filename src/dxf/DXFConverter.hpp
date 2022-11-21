@@ -4,9 +4,10 @@
 #include <vector>
 
 #include <TopoDS_Compound.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Shape.hxx>
-#include <TopoDS_Wire.hxx>
 
+#include "./lib/Arc.hpp"
 #include "./lib/Circle.hpp"
 #include "./lib/Line.hpp"
 #include "./lib/Polyline.hpp"
@@ -19,6 +20,8 @@ const std::string TAG21 = " 21";
 const std::string TAG30 = " 30";
 const std::string TAG31 = " 31";
 const std::string TAG40 = " 40";
+const std::string TAG50 = " 50";
+const std::string TAG51 = " 51";
 const std::string VERTEX = "VERTEX";
 const std::string SEQEND = "SEQEND";
 
@@ -28,9 +31,9 @@ private:
 
   std::vector<DXFLine> m_lines;
   std::vector<DXFCircle> m_circles;
+  std::vector<DXFArc> m_arcs;
   std::vector<DXFPolyline> m_polylines;
 
-  std::vector<TopoDS_Wire> m_wires;
   std::vector<TopoDS_Shape> m_faces;
 
   TopoDS_Compound m_compound;
@@ -44,14 +47,29 @@ private:
   // Process circle
   void processCircle(std::ifstream &);
 
+  // Process arc
+  void processArc(std::ifstream &);
+
   // Process vertex
   DXFVertex processVertex(std::ifstream &) const;
 
   // Process polyline
   void processPolyline(std::ifstream &);
 
+  // Available entities
+  bool availableEntities() const;
+
+  // Remove doubles
+  void removeDoubles();
+
+  // Is connected
+  bool isConnected(const TopoDS_Edge, const gp_Pnt) const;
+
   // Process
   void process();
+
+  // Finish
+  void finish();
 
 public:
   // Constructor

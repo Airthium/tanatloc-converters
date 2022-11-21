@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 
         // Padding
         size_t paddingLength = buffer.data.size() % 4;
-        for (size_t padding; padding < paddingLength; ++padding) {
+        for (size_t padding = 0; padding < paddingLength; ++padding) {
           buffer.data.push_back(0x00);
         }
 

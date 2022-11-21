@@ -35,7 +35,7 @@ TopoDS_Compound MainDocument::getCompound() const {
   TopoDS_Compound compound;
   TopoDS_Builder builder;
   builder.MakeCompound(compound);
-  for (uint i = 1; i <= labels.Size(); ++i) {
+  for (int i = 1; i <= labels.Size(); ++i) {
     const TDF_Label &label = labels.Value(i);
     TopoDS_Shape shape;
     if (XCAFDoc_ShapeTool::GetShape(label, shape)) {

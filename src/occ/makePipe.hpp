@@ -58,6 +58,9 @@ TopoDS_Shape makePipe(const double radius, const TopoDS_Edge edge) {
   explorer.Init(pipe, TopAbs_FACE);
   explorer.Next();
 
+  if (explorer.Current().ShapeType() != TopAbs_FACE)
+    explorer.ReInit();
+
   return explorer.Current();
 }
 
