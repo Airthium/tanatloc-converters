@@ -8,3 +8,7 @@ test/assets/Cube
 
 # Coverage
 coverage
+
+# Sonar
+.scannerwork
+bw-output
