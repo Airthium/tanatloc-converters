@@ -326,7 +326,7 @@ int main(int argc, const char **argv) {
   res = gltf.WriteGltfSceneToFile(&model, gltfFile,
                                   true,  // embedImages
                                   true,  // embedBuffers
-                                  true,  // pretty print
+                                  false, // pretty print
                                   true); // write binary
   if (!res) {
     Logger::ERROR("Unable to write glft file " + gltfFile);

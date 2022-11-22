@@ -143,7 +143,7 @@ void indexJob(const uint index, const std::vector<Vertex> &originalVertices,
   if (find == -1) {
     const auto newIndex = (uint)vertices.size();
     vertices.push_back(originalVertices.at(index));
-    set(find);
+    set(newIndex);
     indices.push_back({index, newIndex});
   } else {
     set(find);

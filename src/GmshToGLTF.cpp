@@ -20,7 +20,6 @@ std::vector<double> generateColor();
  */
 int main(int argc, const char *argv[]) {
   bool res;
-  uint i;
   std::string meshFile;
   std::string gltfFile;
 
@@ -195,7 +194,7 @@ int main(int argc, const char *argv[]) {
   res = gltf.WriteGltfSceneToFile(&model, gltfFile,
                                   true,  // embedImages
                                   true,  // embedBuffers
-                                  true,  // pretty print
+                                  false, // pretty print
                                   true); // write binary
   if (!res) {
     Logger::ERROR("Unable to write glft file " + gltfFile);
