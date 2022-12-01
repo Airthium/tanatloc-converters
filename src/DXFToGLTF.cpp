@@ -95,9 +95,9 @@ int main(int argc, const char **argv) {
     // Vertices
     std::for_each(faceMesh.vertices.begin(), faceMesh.vertices.end(),
                   [&buffer](const Vertex &vertex) {
-                    double x = vertex.X();
-                    double y = vertex.Y();
-                    double z = vertex.Z();
+                    double x = vertex.X() * 1.e-3; // mm to m
+                    double y = vertex.Y() * 1.e-3; // mm to m
+                    double z = vertex.Z() * 1.e-3; // mm to m
 
                     // To buffer
                     Utils::floatToBuffer((float)x, buffer.data);
@@ -137,9 +137,15 @@ int main(int argc, const char **argv) {
     accessorVertices.count = faceMesh.vertices.size();
     accessorVertices.type = TINYGLTF_TYPE_VEC3;
     accessorVertices.minValues = {
-        faceMesh.minVertex.X(), faceMesh.minVertex.Y(), faceMesh.minVertex.Z()};
+        faceMesh.minVertex.X() * 1.e-3, // mm to m
+        faceMesh.minVertex.Y() * 1.e-3, // mm to m
+        faceMesh.minVertex.Z() * 1.e-3  // mm to m
+    };
     accessorVertices.maxValues = {
-        faceMesh.maxVertex.X(), faceMesh.maxVertex.Y(), faceMesh.maxVertex.Z()};
+        faceMesh.maxVertex.X() * 1.e-3, // mm to m
+        faceMesh.maxVertex.Y() * 1.e-3, // mm to m
+        faceMesh.maxVertex.Z() * 1.e-3  // mm to m
+    };
     model.accessors.push_back(accessorVertices);
 
     // Material
@@ -209,9 +215,9 @@ int main(int argc, const char **argv) {
       // Vertices
       std::for_each(edgeMesh.vertices.begin(), edgeMesh.vertices.end(),
                     [&ebuffer](const Vertex &vertex) {
-                      auto x = float(vertex.X());
-                      auto y = float(vertex.Y());
-                      auto z = float(vertex.Z());
+                      double x = vertex.X() * 1.e-3; // mm to m
+                      double y = vertex.Y() * 1.e-3; // mm to m
+                      double z = vertex.Z() * 1.e-3; // mm to m
 
                       // To buffer
                       Utils::floatToBuffer(x, ebuffer.data);
@@ -250,12 +256,16 @@ int main(int argc, const char **argv) {
       eaccessorVertices.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
       eaccessorVertices.count = edgeMesh.vertices.size();
       eaccessorVertices.type = TINYGLTF_TYPE_VEC3;
-      eaccessorVertices.minValues = {edgeMesh.minVertex.X(),
-                                     edgeMesh.minVertex.Y(),
-                                     edgeMesh.minVertex.Z()};
-      eaccessorVertices.maxValues = {edgeMesh.maxVertex.X(),
-                                     edgeMesh.maxVertex.Y(),
-                                     edgeMesh.maxVertex.Z()};
+      eaccessorVertices.minValues = {
+          edgeMesh.minVertex.X() * 1.e-3, // mm to m
+          edgeMesh.minVertex.Y() * 1.e-3, // mm to m
+          edgeMesh.minVertex.Z() * 1.e-3  // mm to m
+      };
+      eaccessorVertices.maxValues = {
+          edgeMesh.maxVertex.X() * 1.e-3, // mm to m
+          edgeMesh.maxVertex.Y() * 1.e-3, // mm to m
+          edgeMesh.maxVertex.Z() * 1.e-3  // mm to m
+      };
       model.accessors.push_back(eaccessorVertices);
 
       // Material
