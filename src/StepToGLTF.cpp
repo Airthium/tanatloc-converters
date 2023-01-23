@@ -209,9 +209,6 @@ int main(int argc, const char *argv[]) {
 
       // Inside solid
       solidNode.children.push_back((int)model.nodes.size() - 1);
-
-      // Scene
-      scene.nodes.push_back((int)model.nodes.size() - 1);
     }
 
     // Nodes

@@ -220,9 +220,9 @@ int main(int argc, const char **argv) {
                       double z = vertex.Z() * 1.e-3; // mm to m
 
                       // To buffer
-                      Utils::floatToBuffer(x, ebuffer.data);
-                      Utils::floatToBuffer(y, ebuffer.data);
-                      Utils::floatToBuffer(z, ebuffer.data);
+                      Utils::floatToBuffer((float)x, ebuffer.data);
+                      Utils::floatToBuffer((float)y, ebuffer.data);
+                      Utils::floatToBuffer((float)z, ebuffer.data);
                     });
       model.buffers.push_back(ebuffer);
 
@@ -302,9 +302,6 @@ int main(int argc, const char **argv) {
 
       // Inside solid
       faceNode.children.push_back((int)model.nodes.size() - 1);
-
-      // Scene
-      scene.nodes.push_back((int)model.nodes.size() - 1);
     }
 
     // Nodes
