@@ -1,8 +1,9 @@
 #include "StepReader.hpp"
 
-#include "../logger/Logger.hpp"
 #include <IFSelect_ReturnStatus.hxx>
 #include <STEPCAFControl_Reader.hxx>
+
+#include "../logger/Logger.hpp"
 
 /**
  * Constructor
@@ -19,7 +20,7 @@ StepReader::StepReader(const std::string &fileName) : m_fileName(fileName) {}
  * Read
  * @returns Status
  */
-bool StepReader::read() {
+bool StepReader::read() const {
   // Read
   IFSelect_ReturnStatus status;
   auto caf_reader = STEPCAFControl_Reader();
@@ -30,7 +31,8 @@ bool StepReader::read() {
   }
 
   // Transfer
-  if (!caf_reader.Transfer(this->m_mainDocument.document)) {
+  Handle(TDocStd_Document) document = this->m_mainDocument.getDocument();
+  if (!caf_reader.Transfer(document)) {
     Logger::ERROR("Unable to transfert root");
     return false;
   }

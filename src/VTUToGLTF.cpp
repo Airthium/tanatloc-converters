@@ -197,6 +197,7 @@ Result getComponent(const Result &result, const int index) {
  * @return Status
  */
 bool writeOne(const Result &result, const std::string &gltfFile) {
+  bool res;
   tinygltf::Model model;
   tinygltf::Scene scene;
   tinygltf::Asset asset;
@@ -516,11 +517,11 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
   model.asset = asset;
 
   tinygltf::TinyGLTF gltf;
-  bool res = gltf.WriteGltfSceneToFile(&model, gltfFile,
-                                       true,  // embedImages
-                                       true,  // embedBuffers
-                                       false, // pretty print
-                                       true); // write binary
+  res = gltf.WriteGltfSceneToFile(&model, gltfFile,
+                                  true,  // embedImages
+                                  true,  // embedBuffers
+                                  false, // pretty print
+                                  true); // write binary
   if (!res) {
     Logger::ERROR("Unable to write glft file " + gltfFile);
     return false;

@@ -1,11 +1,12 @@
 #include <algorithm>
 
+#include <BRepTools.hxx>
+#include <TopExp_Explorer.hxx>
+
 #include "logger/Logger.hpp"
 #include "occ/StepReader.hpp"
 #include "occ/Triangulation.hpp"
 #include "utils/utils.hpp"
-#include <BRepTools.hxx>
-#include <TopExp_Explorer.hxx>
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION

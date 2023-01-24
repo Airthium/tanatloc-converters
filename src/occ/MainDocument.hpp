@@ -17,15 +17,17 @@ private:
   Handle(XCAFApp_Application) m_app;
   Handle(XCAFDoc_ShapeTool) m_shapeTool;
   Handle(XCAFDoc_ColorTool) m_colorTool;
+  Handle(TDocStd_Document) m_document;
 
   // Get labels
   TDF_LabelSequence getLabels() const;
 
 public:
-  Handle(TDocStd_Document) document;
-
   // Constructor
   MainDocument();
+
+  // Get document
+  Handle(TDocStd_Document) getDocument() const;
 
   // Get compound
   TopoDS_Compound getCompound() const;

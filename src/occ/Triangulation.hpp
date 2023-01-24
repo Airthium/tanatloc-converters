@@ -3,8 +3,9 @@
 
 #include <vector>
 
+#include <TopoDS_Compound.hxx>
+
 #include "../geometry/Vertex.hpp"
-#include "MainDocument.hpp"
 
 constexpr double meshQuality = 1.e-3;
 

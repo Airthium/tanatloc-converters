@@ -1,11 +1,13 @@
 #include "VTUReader.hpp"
-#include "../logger/Logger.hpp"
-#include "../utils/utils.hpp"
+
 #include <vtkCellArray.h>
 #include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkUnstructuredGrid.h>
+
+#include "../logger/Logger.hpp"
+#include "../utils/utils.hpp"
 
 /**
  * Constructor
@@ -32,8 +34,7 @@ bool VTUReader::read() {
 
   vtkSmartPointer<vtkUnstructuredGrid> output = this->m_reader->GetOutput();
 
-  const int numberOfPieces = output->GetNumberOfPieces();
-  if (numberOfPieces != 1) {
+  if (output->GetNumberOfPieces() != 1) {
     Logger::ERROR("Number of pieces != 1");
     return false;
   }
@@ -163,10 +164,10 @@ uint addVertex(uint index, const VTUData &data, std::vector<Vertex> &vertices,
  * @param indices Indices
  * @param set Set function
  */
+template <typename FuncT>
 void indexJob(const uint index, const VTUData &data,
               std::vector<Vertex> &vertices, std::vector<double> &values,
-              std::vector<std::pair<uint, uint>> &indices,
-              const std::function<void(uint)> &set) {
+              std::vector<std::pair<uint, uint>> &indices, FuncT set) {
   const auto find = Utils::findIndex(index, indices);
   if (find == -1) {
     const auto newIndex = addVertex(index, data, vertices, values);
@@ -237,6 +238,77 @@ void polygonJob(const VTUData &data, const Polygon &polygon,
 }
 
 /**
+ * Get result
+ * @param data Data
+ * @return Result
+ */
+Result getResult(const VTUData &data) {
+  // Lines polygons, surface triangles & vertices
+  std::vector<Polygon> tempPloygons = data.polygons;
+  std::vector<Polygon> polygons;
+  std::vector<Triangle> tempTriangles = data.triangles;
+  std::vector<Triangle> triangles;
+  std::vector<Vertex> polygonsVertices;
+  std::vector<Vertex> trianglesVertices;
+  std::vector<double> polygonsValues;
+  std::vector<double> trianglesValues;
+
+  // Polygons
+  std::vector<std::pair<uint, uint>> polygonsIndices;
+  std::for_each(tempPloygons.begin(), tempPloygons.end(),
+                [&data, &polygons, &polygonsVertices, &polygonsValues,
+                 &polygonsIndices](const Polygon &polygon) {
+                  polygonJob(data, polygon, polygons, polygonsVertices,
+                             polygonsValues, polygonsIndices);
+                });
+
+  // Triangles
+  std::vector<std::pair<uint, uint>> trianglesIndices;
+  std::for_each(tempTriangles.begin(), tempTriangles.end(),
+                [&data, &triangles, &trianglesVertices, &trianglesValues,
+                 &trianglesIndices](const Triangle &triangle) {
+                  triangleJob(data, triangle, triangles, trianglesVertices,
+                              trianglesValues, trianglesIndices);
+                });
+
+  // min / max
+  std::vector<uint> polygonsMinMaxIndex = Utils::minMax(polygons);
+  std::vector<Vertex> polygonsMinMaxVertex = Utils::minMax(polygonsVertices);
+  std::vector<double> polygonsMinMaxValue = Utils::minMax(polygonsValues);
+
+  std::vector<uint> trianglesMinMaxIndex = Utils::minMax(triangles);
+  std::vector<Vertex> trianglesMinMaxVertex = Utils::minMax(trianglesVertices);
+  std::vector<double> trianglesMinMaxValue = Utils::minMax(trianglesValues);
+
+  // Result
+  Result result;
+  result.size = data.size;
+  result.name = data.name;
+
+  result.polygonsMinIndex = polygonsMinMaxIndex.at(0);
+  result.polygonsMaxIndex = polygonsMinMaxIndex.at(1);
+  result.polygonsMinVertex = polygonsMinMaxVertex.at(0);
+  result.polygonsMaxVertex = polygonsMinMaxVertex.at(1);
+  result.polygonsMinValue = polygonsMinMaxValue.at(0);
+  result.polygonsMaxValue = polygonsMinMaxValue.at(1);
+  result.polygons = polygons;
+  result.polygonsVertices = polygonsVertices;
+  result.polygonsValues = polygonsValues;
+
+  result.trianglesMinIndex = trianglesMinMaxIndex.at(0);
+  result.trianglesMaxIndex = trianglesMinMaxIndex.at(1);
+  result.trianglesMinVertex = trianglesMinMaxVertex.at(0);
+  result.trianglesMaxVertex = trianglesMinMaxVertex.at(1);
+  result.trianglesMinValue = trianglesMinMaxValue.at(0);
+  result.trianglesMaxValue = trianglesMinMaxValue.at(1);
+  result.triangles = triangles;
+  result.trianglesVertices = trianglesVertices;
+  result.trianglesValues = trianglesValues;
+
+  return result;
+}
+
+/**
  * Get results
  * @return Results
  */
@@ -245,67 +317,7 @@ std::vector<Result> VTUReader::getResults() const {
   std::vector<Result> results;
 
   std::for_each(arrays.begin(), arrays.end(), [&results](const VTUData &data) {
-    // Lines polygons, surface triangles & vertices
-    std::vector<Polygon> tempPloygons = data.polygons;
-    std::vector<Polygon> polygons;
-    std::vector<Triangle> tempTriangles = data.triangles;
-    std::vector<Triangle> triangles;
-    std::vector<Vertex> polygonsVertices;
-    std::vector<Vertex> trianglesVertices;
-    std::vector<double> polygonsValues;
-    std::vector<double> trianglesValues;
-
-    // Polygons
-    std::vector<std::pair<uint, uint>> polygonsIndices;
-    std::for_each(tempPloygons.begin(), tempPloygons.end(),
-                  [data, &polygons, &polygonsVertices, &polygonsValues,
-                   &polygonsIndices](const Polygon &polygon) {
-                    polygonJob(data, polygon, polygons, polygonsVertices,
-                               polygonsValues, polygonsIndices);
-                  });
-
-    // Triangles
-    std::vector<std::pair<uint, uint>> trianglesIndices;
-    std::for_each(tempTriangles.begin(), tempTriangles.end(),
-                  [data, &triangles, &trianglesVertices, &trianglesValues,
-                   &trianglesIndices](const Triangle &triangle) {
-                    triangleJob(data, triangle, triangles, trianglesVertices,
-                                trianglesValues, trianglesIndices);
-                  });
-
-    // min / max
-    std::vector<uint> polygonsMinMaxIndex = Utils::minMax(polygons);
-    std::vector<Vertex> polygonsMinMaxVertex = Utils::minMax(polygonsVertices);
-    std::vector<double> polygonsMinMaxValue = Utils::minMax(polygonsValues);
-
-    std::vector<uint> trianglesMinMaxIndex = Utils::minMax(triangles);
-    std::vector<Vertex> trianglesMinMaxVertex =
-        Utils::minMax(trianglesVertices);
-    std::vector<double> trianglesMinMaxValue = Utils::minMax(trianglesValues);
-
-    Result result;
-    result.size = data.size;
-    result.name = data.name;
-
-    result.polygonsMinIndex = polygonsMinMaxIndex.at(0);
-    result.polygonsMaxIndex = polygonsMinMaxIndex.at(1);
-    result.polygonsMinVertex = polygonsMinMaxVertex.at(0);
-    result.polygonsMaxVertex = polygonsMinMaxVertex.at(1);
-    result.polygonsMinValue = polygonsMinMaxValue.at(0);
-    result.polygonsMaxValue = polygonsMinMaxValue.at(1);
-    result.polygons = polygons;
-    result.polygonsVertices = polygonsVertices;
-    result.polygonsValues = polygonsValues;
-
-    result.trianglesMinIndex = trianglesMinMaxIndex.at(0);
-    result.trianglesMaxIndex = trianglesMinMaxIndex.at(1);
-    result.trianglesMinVertex = trianglesMinMaxVertex.at(0);
-    result.trianglesMaxVertex = trianglesMinMaxVertex.at(1);
-    result.trianglesMinValue = trianglesMinMaxValue.at(0);
-    result.trianglesMaxValue = trianglesMinMaxValue.at(1);
-    result.triangles = triangles;
-    result.trianglesVertices = trianglesVertices;
-    result.trianglesValues = trianglesValues;
+    Result result = getResult(data);
 
     results.push_back(result);
   });

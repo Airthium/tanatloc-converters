@@ -15,7 +15,7 @@ public:
   explicit StepReader(const std::string &);
 
   // Read
-  bool read();
+  bool read() const;
 
   TopoDS_Compound getCompound() const;
   Quantity_Color getShapeColor(const TopoDS_Shape &shape) const;

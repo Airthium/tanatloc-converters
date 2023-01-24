@@ -203,20 +203,21 @@ if(COVERAGE)
     COMMAND make -j"$(nproc)"
     COMMAND make test
     COMMAND ./DXFToGLTF || true
-    COMMAND ./DXFToGLTF ../test/assets/not_existing.dxf pipe.glb|| true
-    COMMAND ./DXFToGLTF ../test/assets/pipe.dxf pipe.glb || true
-    COMMAND ./DXFToGLTF ../test/assets/circle.dxf circle.glb || true
-    COMMAND ./DXFToGLTF ../test/assets/curved.dxf curved.glb || true
+    COMMAND ./DXFToGLTF ../test/assets/not_existing.dxf not_existing.glb not_existing.brep || true
+    COMMAND ./DXFToGLTF ../test/assets/pipe.dxf pipe.glb pipre.brep || true
+    COMMAND ./DXFToGLTF ../test/assets/circle.dxf circle.glb circle.brep || true
+    COMMAND ./DXFToGLTF ../test/assets/curved.dxf curved.glb curved.brep || true
     COMMAND ./GmshToGLTF || true
     COMMAND ./GmshToGLTF ../test/assets/not_existing.msh not_existing.glb || true
     COMMAND ./GmshToGLTF ../test/assets/Cube.msh Cube.glb || true
     COMMAND ./StepToGLTF || true
-    COMMAND ./StepToGLTF ../test/assets/not_existing.step not_existing.glb || true
-    COMMAND ./StepToGLTF ../test/assets/cube.step cube.glb || true
+    COMMAND ./StepToGLTF ../test/assets/not_existing.step not_existing.glb not_existing.brep || true
+    COMMAND ./StepToGLTF ../test/assets/cube.step cube.glb cube.brep || true
     COMMAND ./VTUToGLTF || true
     COMMAND ./VTUToGLTF ../test/assets/not_existing.vtu not_existing || true
     COMMAND ./VTUToGLTF ../test/assets/Result.vtu Result || true
     COMMAND ./VTUToGLTF ../test/assets/Result2Pieces.vtu Result || true
+    COMMAND ./VTUToGLTF ../test/assets/Result_streamTracer.vtu Result || true
     COMMAND lcov --directory . -c -o report0.info
     COMMAND lcov --remove report0.info '/usr/include/*' '/usr/local/include/*' '/usr/lib/*' -o report.info
     COMMAND genhtml -o ../coverage -t "Converters coverage" report.info

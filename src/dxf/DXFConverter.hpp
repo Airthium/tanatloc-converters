@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <TopoDS_Compound.hxx>
-#include <TopoDS_Edge.hxx>
 #include <TopoDS_Shape.hxx>
 
 #include "./lib/Arc.hpp"
@@ -73,7 +72,7 @@ public:
   DXFConverter();
 
   // Set input
-  void setInput(const std::string &);
+  void setInput(const std::string_view &);
 
   // Convert
   bool convert();

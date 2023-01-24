@@ -53,14 +53,8 @@ public:
   // Loader
   bool load(const std::string &);
 
-  // Get volume labels
-  std::vector<uint> getVolumeLabels() const;
-
   // Get surface labels
   std::vector<uint> getSurfaceLabels() const;
-
-  // Get volume
-  Volume getVolume(const uint) const;
 
   // Get surface
   Surface getSurface(const uint) const;

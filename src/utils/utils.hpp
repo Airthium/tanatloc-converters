@@ -1,11 +1,7 @@
 #ifndef _UTILS_
 #define _UTILS_
 
-#include <algorithm>
-#include <cstring>
-#include <random>
 #include <string>
-#include <uuid/uuid.h>
 
 #include "../geometry/Polygon.hpp"
 #include "../geometry/Tetrahedron.hpp"

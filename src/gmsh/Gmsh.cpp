@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <fstream>
-#include <functional>
 #include <iostream>
 
 #include "../logger/Logger.hpp"
@@ -114,13 +113,6 @@ bool Gmsh::load(const std::string &fileName) {
 }
 
 /**
- * Get volume labels
- */
-std::vector<uint> Gmsh::getVolumeLabels() const {
-  return this->m_tetrahedronLabels;
-}
-
-/**
  * Get surface labels
  */
 std::vector<uint> Gmsh::getSurfaceLabels() const {
@@ -135,10 +127,10 @@ std::vector<uint> Gmsh::getSurfaceLabels() const {
  * @param indices Indices
  * @param set Set function
  */
+template <typename FuncT>
 void indexJob(const uint index, const std::vector<Vertex> &originalVertices,
               std::vector<Vertex> &vertices,
-              std::vector<std::pair<uint, uint>> &indices,
-              const std::function<void(uint)> &set) {
+              std::vector<std::pair<uint, uint>> &indices, FuncT set) {
   auto find = Utils::findIndex(index, indices);
   if (find == -1) {
     const auto newIndex = (uint)vertices.size();
@@ -209,74 +201,4 @@ Surface Gmsh::getSurface(const uint label) const {
   surface.vertices = vertices;
 
   return surface;
-}
-
-/**
- * Get volume
- * @param label Label
- * @return Volume
- */
-Volume Gmsh::getVolume(const uint label) const {
-  // Volume tethrahedra & vertices
-  std::vector<Tetrahedron> tempTetrahedra;
-  std::vector<Tetrahedron> tetrahedra;
-  std::vector<Vertex> vertices;
-
-  // Volume tetrahedra
-  std::for_each(this->m_tetrahedra.begin(), this->m_tetrahedra.end(),
-                [label, &tempTetrahedra](const Tetrahedron &tetrahedron) {
-                  if (tetrahedron.Label() == label) {
-                    tempTetrahedra.push_back(tetrahedron);
-                  }
-                });
-
-  // Volume vertices
-  std::vector<std::pair<uint, uint>> newIndices;
-  std::for_each(tempTetrahedra.begin(), tempTetrahedra.end(),
-                [this, &vertices, &newIndices,
-                 &tetrahedra](const Tetrahedron &tetrahedron) {
-                  const uint index1 = tetrahedron.I1();
-                  const uint index2 = tetrahedron.I2();
-                  const uint index3 = tetrahedron.I3();
-                  const uint index4 = tetrahedron.I4();
-
-                  Tetrahedron newTetrahedron;
-
-                  indexJob(index1, this->m_vertices, vertices, newIndices,
-                           [&newTetrahedron](const uint index) {
-                             newTetrahedron.setI1(index);
-                           });
-
-                  indexJob(index2, this->m_vertices, vertices, newIndices,
-                           [&newTetrahedron](const uint index) {
-                             newTetrahedron.setI2(index);
-                           });
-
-                  indexJob(index3, this->m_vertices, vertices, newIndices,
-                           [&newTetrahedron](const uint index) {
-                             newTetrahedron.setI3(index);
-                           });
-
-                  indexJob(index4, this->m_vertices, vertices, newIndices,
-                           [&newTetrahedron](const uint index) {
-                             newTetrahedron.setI4(index);
-                           });
-
-                  tetrahedra.push_back(newTetrahedron);
-                });
-
-  // min / max
-  std::vector<uint> minMaxIndex = Utils::minMax(tetrahedra);
-  std::vector<Vertex> minMaxVertex = Utils::minMax(vertices);
-
-  Volume volume;
-  volume.label = label;
-  volume.minIndex = minMaxIndex.at(0);
-  volume.maxIndex = minMaxIndex.at(1);
-  volume.minVertex = minMaxVertex.at(0);
-  volume.maxVertex = minMaxVertex.at(1);
-  volume.tetrahedra = tetrahedra;
-  volume.vertices = vertices;
-
-  return volume;
 }

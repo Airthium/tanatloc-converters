@@ -4,12 +4,13 @@
 #include <string>
 #include <vector>
 
+#include <vtkSmartPointer.h>
+#include <vtkXMLUnstructuredGridReader.h>
+
 #include "../geometry/Polygon.hpp"
 #include "../geometry/Tetrahedron.hpp"
 #include "../geometry/Triangle.hpp"
 #include "../geometry/Vertex.hpp"
-#include <vtkSmartPointer.h>
-#include <vtkXMLUnstructuredGridReader.h>
 
 struct VTUData {
   int size;

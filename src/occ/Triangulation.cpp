@@ -2,7 +2,6 @@
 
 #include <algorithm>
 
-#include "../logger/Logger.hpp"
 #include "makePipe.hpp"
 #include <BRepBndLib.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
@@ -13,6 +12,8 @@
 #include <StdPrs_ToolTriangulatedShape.hxx>
 #include <TColgp_Array1OfDir.hxx>
 #include <TopoDS.hxx>
+
+#include "../logger/Logger.hpp"
 
 /**
  * Constructor
@@ -87,7 +88,7 @@ FaceMesh Triangulation::triangulateFace(const TopoDS_Shape &face) const {
   for (i = 1; i <= nbNodes; ++i) {
     const gp_Pnt node = nodes.Value(i);
     p = node.Transformed(location.Transformation());
-    faceMesh.vertices.push_back(Vertex(p.X(), p.Y(), p.Z()));
+    faceMesh.vertices.emplace_back(p.X(), p.Y(), p.Z());
   }
 
   // Normals
@@ -95,7 +96,7 @@ FaceMesh Triangulation::triangulateFace(const TopoDS_Shape &face) const {
   StdPrs_ToolTriangulatedShape::Normal(TopoDS::Face(face), pc, normals);
   for (i = 1; i <= nbNodes; ++i) {
     d = normals(i).Transformed(location.Transformation());
-    faceMesh.normals.push_back(Vertex(d.X(), d.Y(), d.Z()));
+    faceMesh.normals.emplace_back(d.X(), d.Y(), d.Z());
   }
 
   // Indices

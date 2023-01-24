@@ -6,10 +6,7 @@
 #include <BRepBuilderAPI_MakeVertex.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRep_Builder.hxx>
-#include <BRep_Tool.hxx>
 #include <GC_MakeArcOfCircle.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopoDS.hxx>
 #include <TopoDS_Wire.hxx>
 #include <gp_Circ.hxx>
 
@@ -26,7 +23,9 @@ DXFConverter::DXFConverter() { this->clear(); }
  * Set input
  * @param input
  */
-void DXFConverter::setInput(const std::string &input) { this->m_input = input; }
+void DXFConverter::setInput(const std::string_view &input) {
+  this->m_input = input;
+}
 
 // trim from end (in place)
 static inline void rtrim(std::string &s) {

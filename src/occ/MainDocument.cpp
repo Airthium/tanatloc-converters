@@ -1,18 +1,19 @@
 #include "MainDocument.hpp"
 
-#include "../logger/Logger.hpp"
 #include <TopoDS_Builder.hxx>
 #include <XCAFDoc_DocumentTool.hxx>
+
+#include "../logger/Logger.hpp"
 
 /**
  * Constructor
  */
 MainDocument::MainDocument() {
   this->m_app = XCAFApp_Application::GetApplication();
-  this->m_app->NewDocument("TANATLOC_CONVERTERS", this->document);
+  this->m_app->NewDocument("TANATLOC_CONVERTERS", this->m_document);
 
-  this->m_shapeTool = XCAFDoc_DocumentTool::ShapeTool(this->document->Main());
-  this->m_colorTool = XCAFDoc_DocumentTool::ColorTool(this->document->Main());
+  this->m_shapeTool = XCAFDoc_DocumentTool::ShapeTool(this->m_document->Main());
+  this->m_colorTool = XCAFDoc_DocumentTool::ColorTool(this->m_document->Main());
 }
 
 /**
@@ -23,6 +24,14 @@ TDF_LabelSequence MainDocument::getLabels() const {
   TDF_LabelSequence labels;
   this->m_shapeTool->GetFreeShapes(labels);
   return labels;
+}
+
+/**
+ * Get document
+ * @return Document
+ */
+Handle(TDocStd_Document) MainDocument::getDocument() const {
+  return this->m_document;
 }
 
 /**

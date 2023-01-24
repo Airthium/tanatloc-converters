@@ -1,12 +1,12 @@
 #include <algorithm>
 
-#include "dxf/DXFConverter.hpp"
-#include "logger/Logger.hpp"
-#include "occ/MainDocument.hpp"
-#include "occ/Triangulation.hpp"
-#include "utils/utils.hpp"
 #include <BRepTools.hxx>
 #include <TopExp_Explorer.hxx>
+
+#include "dxf/DXFConverter.hpp"
+#include "logger/Logger.hpp"
+#include "occ/Triangulation.hpp"
+#include "utils/utils.hpp"
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
