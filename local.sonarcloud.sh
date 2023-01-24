@@ -3,8 +3,7 @@
 set -e
 
 # Check SONAR_TOKEN
-if [ -z "$SONAR_TOKEN" ]
-then
+if [ -z "$SONAR_TOKEN" ]; then
   echo "SONAR_TOKEN environment variable not defined"
   exit 1
 fi
@@ -16,7 +15,7 @@ type build-wrapper-linux-x86-64 >/dev/null 2>&1 || {
 }
 
 # Check sonar-scanner
-type sonar-scanner > /dev/null 2>&1 || {
+type sonar-scanner >/dev/null 2>&1 || {
   echo "sonar-scanner not available"
   exit 3
 }
@@ -28,6 +27,14 @@ cmake -DCOVERAGE=ON ..
 build-wrapper-linux-x86-64 --out-dir ../bw-output make clean coverage
 cd ..
 
+echo "Gcov"
+cd build
+gcda=$(find -name *.cpp.gcda)
+for file in $gcda; do
+  gcov $file
+done
+cd ..
+
 echo "Scan"
 sonar-scanner \
   -Dsonar.projectVersion=1.0 \
@@ -35,6 +42,7 @@ sonar-scanner \
   -Dsonar.cfamily.threads="$(nproc)" \
   -Dsonar.cfamily.cache.enabled=true \
   -Dsonar.cfamily.cache.path=/tmp \
+  -Dsonar.cfamily.gcov.reportsPath=/build \
   -Dsonar.organization=airthium \
   -Dsonar.projectKey=Airthium_tanatloc-converters \
   -Dsonar.sources=src \
