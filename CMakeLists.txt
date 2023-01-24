@@ -138,6 +138,7 @@ set(LOGGER_TESTS
 )
 
 set(GEOMETRY_TESTS
+  test/geometry/Polygon.test.cpp
   test/geometry/Tetrahedron.test.cpp
   test/geometry/Triangle.test.cpp
   test/geometry/Vertex.test.cpp
@@ -165,6 +166,10 @@ set(DXF_TESTS
   test/dxf/lib/Vertex.test.cpp
 )
 
+set(UTILS_TEST
+  test/utils/utils.test.cpp
+)
+
 set(SOURCE_TESTS
   test/main.cpp
   ${DXF_TESTS}
@@ -173,6 +178,7 @@ set(SOURCE_TESTS
   ${LOGGER_TESTS}
   ${OCC_TESTS}
   ${VTK_TESTS}
+  ${UTILS_TEST}
   ${DXF_SOURCE}
   ${GEOMETRY_SOURCE}
   ${GMSH_SOURCE}

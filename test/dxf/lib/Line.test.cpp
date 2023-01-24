@@ -8,6 +8,11 @@ TEST_CASE("DXFLine") {
     CHECK(line.x1 == 0.);
   }
 
+  SECTION("In X-Y") {
+    auto line = DXFLine();
+    CHECK(line.inXY());
+  }
+
   SECTION("Equal operator") {
     auto line1 = DXFLine();
     auto line2 = DXFLine();
