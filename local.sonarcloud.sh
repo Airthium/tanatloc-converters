@@ -29,9 +29,9 @@ cd ..
 
 echo "Gcov"
 cd build
-gcda=$(find -name *.cpp.gcda)
+gcda=$(find . -name "*.cpp.gcda")
 for file in $gcda; do
-  gcov $file
+  gcov "$file"
 done
 cd ..
 
