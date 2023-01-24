@@ -158,6 +158,11 @@ set(VTK_TESTS
 
 set(DXF_TESTS
   test/dxf/DXFConverter.test.cpp
+  test/dxf/lib/Arc.test.cpp
+  test/dxf/lib/Circle.test.cpp
+  test/dxf/lib/Line.test.cpp
+  test/dxf/lib/Polyline.test.cpp
+  test/dxf/lib/Vertex.test.cpp
 )
 
 set(SOURCE_TESTS
