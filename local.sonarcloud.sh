@@ -31,7 +31,11 @@ echo "Gcov"
 cd build
 cppgcda=$(find . -name "*.cpp.gcda")
 for file in $cppgcda; do
-  gcov "$file"
+  path=$(dirname "$file")
+  file=$(basename "$file")
+  cd "$path"
+  gcov -a "$file"
+  cd -
 done
 cd ..
 
