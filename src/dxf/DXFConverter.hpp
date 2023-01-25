@@ -1,6 +1,7 @@
 #ifndef _DXF_CONVERTER_
 #define _DXF_CONVERTER_
 
+#include <string_view>
 #include <vector>
 
 #include <TopoDS_Compound.hxx>

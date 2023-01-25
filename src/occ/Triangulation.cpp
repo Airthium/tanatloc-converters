@@ -113,9 +113,12 @@ FaceMesh Triangulation::triangulateFace(const TopoDS_Shape &face) const {
       n2 = tmp;
     }
     if (this->isValid(nodes.Value(n1), nodes.Value(n2), nodes.Value(n3))) {
-      faceMesh.indices.push_back(--n1);
-      faceMesh.indices.push_back(--n2);
-      faceMesh.indices.push_back(--n3);
+      --n1;
+      faceMesh.indices.push_back(n1);
+      --n2;
+      faceMesh.indices.push_back(n2);
+      --n3;
+      faceMesh.indices.push_back(n3);
     }
   }
 
