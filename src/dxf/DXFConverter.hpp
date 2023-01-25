@@ -1,7 +1,7 @@
 #ifndef _DXF_CONVERTER_
 #define _DXF_CONVERTER_
 
-#include <string_view>
+#include <string>
 #include <vector>
 
 #include <TopoDS_Compound.hxx>
@@ -73,7 +73,7 @@ public:
   DXFConverter();
 
   // Set input
-  void setInput(const std::string_view &);
+  void setInput(const std::string &);
 
   // Convert
   bool convert();

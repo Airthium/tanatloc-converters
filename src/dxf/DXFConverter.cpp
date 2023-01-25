@@ -23,9 +23,7 @@ DXFConverter::DXFConverter() { this->clear(); }
  * Set input
  * @param input
  */
-void DXFConverter::setInput(const std::string_view &input) {
-  this->m_input = input;
-}
+void DXFConverter::setInput(const std::string &input) { this->m_input = input; }
 
 // trim from end (in place)
 static inline void rtrim(std::string &s) {
