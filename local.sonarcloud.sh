@@ -33,11 +33,6 @@ cppgcda=$(find . -name "*.cpp.gcda")
 for file in $cppgcda; do
   gcov "$file"
 done
-
-hppgcda=$(find . -name "*.hpp.gcda")
-for file in $cppgcda; do
-  gcov "$file"
-done
 cd ..
 
 echo "Scan"

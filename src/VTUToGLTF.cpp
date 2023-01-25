@@ -11,6 +11,8 @@
 
 #include <tiny_gltf.h>
 
+bool writeScalar(const std::string &, const Result &);
+bool writeVector(const std::string &, const Result &);
 Result getMagnitude(const Result &);
 Result getComponent(const Result &, const int);
 bool writeOne(const Result &, const std::string &);
@@ -44,34 +46,61 @@ int main(int argc, const char *argv[]) {
 
   // Results
   std::vector<Result> results = reader.getResults();
-  for (size_t i = 0; i < results.size(); i++) {
-    Result result = results.at(i);
-    if (result.size == 1) { // Scalar
-      bool status =
-          writeOne(result, genericGltfFile + "_" + result.name + ".glb");
-      if (!status)
-        return EXIT_FAILURE;
-    } else if (result.size == 3) { // Vector
-      // Magnitude
-      Result magnitude = getMagnitude(result);
-      bool status = writeOne(magnitude, genericGltfFile + "_" + result.name +
-                                            "_magnitude_line.glb");
-      if (!status)
-        return EXIT_FAILURE;
-
-      // Component 1, 2 & 3
-      for (int j = 0; j < 3; ++j) {
-        Result component = getComponent(result, j);
-        status = writeOne(component, genericGltfFile + "_" + result.name +
-                                         "_component" + std::to_string(j + 1) +
-                                         "_line.glb");
-        if (!status)
-          return EXIT_FAILURE;
-      }
-    }
-  }
+  bool globalStatus = true;
+  std::for_each(results.begin(), results.end(),
+                [&genericGltfFile, &globalStatus](const Result &result) {
+                  if (result.size == 1) { // Scalar
+                    bool status = writeScalar(genericGltfFile, result);
+                    globalStatus = globalStatus && status;
+                  } else if (result.size == 3) { // Vector
+                    bool status = writeVector(genericGltfFile, result);
+                    globalStatus = globalStatus && status;
+                  }
+                });
+  if (!globalStatus)
+    return EXIT_FAILURE;
 
   return EXIT_SUCCESS;
+}
+
+/**
+ * Write scalar
+ * @param genericGltfFile Generic GLTF file
+ * @param result Result
+ * @return true
+ * @return false
+ */
+bool writeScalar(const std::string &genericGltfFile, const Result &result) {
+  return writeOne(result, genericGltfFile + "_" + result.name + ".glb");
+}
+
+/**
+ * Write vector
+ * @param genericGltfFile Generic GLTF file
+ * @param result Result
+ * @return true
+ * @return false
+ */
+bool writeVector(const std::string &genericGltfFile, const Result &result) {
+  // Magnitude
+  Result magnitude = getMagnitude(result);
+  bool status = writeOne(magnitude, genericGltfFile + "_" + result.name +
+                                        "_magnitude_line.glb");
+  if (!status)
+    return status;
+
+  // Component 1, 2 & 3
+  for (int j = 0; j < 3; ++j) {
+    Result component = getComponent(result, j);
+    status =
+        writeOne(component, genericGltfFile + "_" + result.name + "_component" +
+                                std::to_string(j + 1) + "_line.glb");
+
+    if (!status)
+      return status;
+  }
+
+  return true;
 }
 
 /**
