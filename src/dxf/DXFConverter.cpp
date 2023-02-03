@@ -344,7 +344,7 @@ void DXFConverter::process() {
 
   Logger::DEBUG("  Loop index");
   std::for_each(this->m_index.begin(), this->m_index.end(),
-                [this, &wireBuilder, &wires](const Index &index) {
+                [this, &wireBuilder](const Index &index) {
                   std::string type = index.type;
                   if (type == "line") {
                     auto line = this->m_lines.at(index.index);
