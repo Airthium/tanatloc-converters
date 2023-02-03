@@ -4,7 +4,6 @@
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakeVertex.hxx>
-#include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRep_Builder.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <TopoDS_Wire.hxx>
@@ -74,11 +73,15 @@ TopoDS_Compound DXFConverter::getCompound() const { return this->m_compound; }
 
 // PRIVATE
 
+/**
+ * Clear
+ */
 void DXFConverter::clear() {
   this->m_lines.clear();
   this->m_circles.clear();
   this->m_arcs.clear();
   this->m_polylines.clear();
+  this->m_index.clear();
 }
 
 void DXFConverter::processLine(std::ifstream &file) {
@@ -116,6 +119,9 @@ void DXFConverter::processLine(std::ifstream &file) {
     newLine.z1 = 0.;
     newLine.z2 = 0.;
     this->m_lines.push_back(newLine);
+
+    Index index = {"line", this->m_lines.size() - 1};
+    this->m_index.push_back(index);
   }
 }
 
@@ -149,6 +155,9 @@ void DXFConverter::processCircle(std::ifstream &file) {
   newCircle.z = 0.;
 
   this->m_circles.push_back(newCircle);
+
+  Index index = {"circle", this->m_circles.size() - 1};
+  this->m_index.push_back(index);
 }
 
 void DXFConverter::processArc(std::ifstream &file) {
@@ -185,6 +194,9 @@ void DXFConverter::processArc(std::ifstream &file) {
   newArc.circle.z = 0.;
 
   this->m_arcs.push_back(newArc);
+
+  Index index = {"arc", this->m_arcs.size() - 1};
+  this->m_index.push_back(index);
 }
 
 DXFVertex DXFConverter::processVertex(std::ifstream &file) const {
@@ -227,6 +239,9 @@ void DXFConverter::processPolyline(std::ifstream &file) {
   }
 
   this->m_polylines.push_back(newPolyline);
+
+  Index index = {"polyline", this->m_polylines.size() - 1};
+  this->m_index.push_back(index);
 }
 
 bool DXFConverter::availableEntities() const {
@@ -256,6 +271,64 @@ void DXFConverter::removeDoubles() {
       this->m_polylines.end());
 }
 
+void DXFConverter::addLineToWireBuilder(
+    const DXFLine &line, BRepBuilderAPI_MakeWire &wireBuilder) const {
+  gp_Pnt point1(line.x1, line.y1, line.z1);
+  gp_Pnt point2(line.x2, line.y2, line.z2);
+
+  BRepBuilderAPI_MakeVertex vertexBuilder1(point1);
+  BRepBuilderAPI_MakeVertex vertexBuilder2(point2);
+  TopoDS_Vertex vertex1 = vertexBuilder1.Vertex();
+  TopoDS_Vertex vertex2 = vertexBuilder2.Vertex();
+
+  auto edgeBuilder = BRepBuilderAPI_MakeEdge(vertex1, vertex2);
+  TopoDS_Edge edge = edgeBuilder.Edge();
+
+  wireBuilder.Add(edge);
+}
+
+void DXFConverter::addArcToWireBuilder(
+    const DXFArc &arc, BRepBuilderAPI_MakeWire &wireBuilder) const {
+  gp_Circ occCircle;
+  gp_Pnt center(arc.circle.x, arc.circle.y, arc.circle.z);
+  occCircle.SetLocation(center);
+  occCircle.SetRadius(arc.circle.r);
+
+  GC_MakeArcOfCircle occArc(occCircle, 2. * M_PI * arc.startAngle / 360.,
+                            2. * M_PI * arc.endAngle / 360., true);
+
+  Handle(Geom_TrimmedCurve) curve = occArc.Value();
+
+  auto edgeBuilder = BRepBuilderAPI_MakeEdge(curve);
+  TopoDS_Edge edge = edgeBuilder.Edge();
+
+  wireBuilder.Add(edge);
+}
+
+void DXFConverter::addPolylineToWireBuilder(
+    const DXFPolyline &polyline, BRepBuilderAPI_MakeWire &wireBuilder) const {
+  const size_t size = polyline.vertices.size();
+
+  for (size_t i = 0; i < size; ++i) {
+    const DXFVertex v1 = polyline.vertices.at(i);
+    const DXFVertex v2 = polyline.vertices.at((i + 1) % size);
+
+    gp_Pnt point1(v1.x, v1.y, v1.z);
+    gp_Pnt point2(v2.x, v2.y, v2.z);
+
+    BRepBuilderAPI_MakeVertex vertexBuilder1(point1);
+    BRepBuilderAPI_MakeVertex vertexBuilder2(point2);
+
+    TopoDS_Vertex vertex1 = vertexBuilder1.Vertex();
+    TopoDS_Vertex vertex2 = vertexBuilder2.Vertex();
+
+    auto edgeBuilder = BRepBuilderAPI_MakeEdge(vertex1, vertex2);
+    TopoDS_Edge edge = edgeBuilder.Edge();
+
+    wireBuilder.Add(edge);
+  }
+}
+
 void DXFConverter::process() {
   Logger::DEBUG("Process");
 
@@ -267,49 +340,26 @@ void DXFConverter::process() {
   this->removeDoubles();
 
   std::vector<TopoDS_Wire> wires;
-  auto linesArcsWireBuilder = BRepBuilderAPI_MakeWire();
+  auto wireBuilder = BRepBuilderAPI_MakeWire();
 
-  // Lines
-  Logger::DEBUG("  Build lines");
-  std::for_each(this->m_lines.begin(), this->m_lines.end(),
-                [&linesArcsWireBuilder](const DXFLine &line) {
-                  gp_Pnt point1(line.x1, line.y1, line.z1);
-                  gp_Pnt point2(line.x2, line.y2, line.z2);
-
-                  BRepBuilderAPI_MakeVertex vertexBuilder1(point1);
-                  BRepBuilderAPI_MakeVertex vertexBuilder2(point2);
-                  TopoDS_Vertex vertex1 = vertexBuilder1.Vertex();
-                  TopoDS_Vertex vertex2 = vertexBuilder2.Vertex();
-
-                  auto edgeBuilder = BRepBuilderAPI_MakeEdge(vertex1, vertex2);
-                  TopoDS_Edge edge = edgeBuilder.Edge();
-
-                  linesArcsWireBuilder.Add(edge);
+  Logger::DEBUG("  Loop index");
+  std::for_each(this->m_index.begin(), this->m_index.end(),
+                [this, &wireBuilder, &wires](const Index &index) {
+                  std::string type = index.type;
+                  if (type == "line") {
+                    auto line = this->m_lines.at(index.index);
+                    this->addLineToWireBuilder(line, wireBuilder);
+                  } else if (type == "arc") {
+                    auto arc = this->m_arcs.at(index.index);
+                    this->addArcToWireBuilder(arc, wireBuilder);
+                  } else if (type == "polyline") {
+                    auto polyline = this->m_polylines.at(index.index);
+                    this->addPolylineToWireBuilder(polyline, wireBuilder);
+                  }
                 });
 
-  // Arcs
-  Logger::DEBUG("  Build arcs");
-  std::for_each(this->m_arcs.begin(), this->m_arcs.end(),
-                [&linesArcsWireBuilder](const DXFArc &arc) {
-                  gp_Circ occCircle;
-                  gp_Pnt center(arc.circle.x, arc.circle.y, arc.circle.z);
-                  occCircle.SetLocation(center);
-                  occCircle.SetRadius(arc.circle.r);
-
-                  GC_MakeArcOfCircle occArc(
-                      occCircle, 2. * M_PI * arc.startAngle / 360.,
-                      2. * M_PI * arc.endAngle / 360., true);
-
-                  Handle(Geom_TrimmedCurve) curve = occArc.Value();
-
-                  auto edgeBuilder = BRepBuilderAPI_MakeEdge(curve);
-                  TopoDS_Edge edge = edgeBuilder.Edge();
-
-                  linesArcsWireBuilder.Add(edge);
-                });
-
-  if (linesArcsWireBuilder.IsDone())
-    wires.push_back(linesArcsWireBuilder.Wire());
+  if (wireBuilder.IsDone())
+    wires.push_back(wireBuilder.Wire());
 
   Logger::DEBUG("  Build circles");
   std::for_each(this->m_circles.begin(), this->m_circles.end(),
@@ -322,39 +372,10 @@ void DXFConverter::process() {
                   auto edgeBuilder = BRepBuilderAPI_MakeEdge(occCircle);
                   TopoDS_Edge occEdge = edgeBuilder.Edge();
 
-                  auto wireBuilder = BRepBuilderAPI_MakeWire(occEdge);
-                  TopoDS_Wire occWire = wireBuilder.Wire();
+                  auto circleWireBuilder = BRepBuilderAPI_MakeWire(occEdge);
+                  TopoDS_Wire occWire = circleWireBuilder.Wire();
 
                   wires.push_back(occWire);
-                });
-
-  Logger::DEBUG("  Build polylines");
-  std::for_each(this->m_polylines.begin(), this->m_polylines.end(),
-                [&wires](const DXFPolyline &polyline) {
-                  const size_t size = polyline.vertices.size();
-
-                  auto wireBuilder = BRepBuilderAPI_MakeWire();
-                  for (size_t i = 0; i < size; ++i) {
-                    const DXFVertex v1 = polyline.vertices.at(i);
-                    const DXFVertex v2 = polyline.vertices.at((i + 1) % size);
-
-                    gp_Pnt point1(v1.x, v1.y, v1.z);
-                    gp_Pnt point2(v2.x, v2.y, v2.z);
-
-                    BRepBuilderAPI_MakeVertex vertexBuilder1(point1);
-                    BRepBuilderAPI_MakeVertex vertexBuilder2(point2);
-
-                    TopoDS_Vertex vertex1 = vertexBuilder1.Vertex();
-                    TopoDS_Vertex vertex2 = vertexBuilder2.Vertex();
-
-                    auto edgeBuilder =
-                        BRepBuilderAPI_MakeEdge(vertex1, vertex2);
-                    TopoDS_Edge edge = edgeBuilder.Edge();
-
-                    wireBuilder.Add(edge);
-                  }
-
-                  wires.push_back(wireBuilder.Wire());
                 });
 
   // Build face
@@ -381,6 +402,9 @@ void DXFConverter::process() {
   this->clear();
 }
 
+/**
+ * Finish
+ */
 void DXFConverter::finish() {
   Logger::DEBUG("Finish");
 

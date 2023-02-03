@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <BRepBuilderAPI_MakeWire.hxx>
 #include <TopoDS_Compound.hxx>
 #include <TopoDS_Shape.hxx>
 
@@ -25,6 +26,11 @@ const std::string TAG51 = " 51";
 const std::string VERTEX = "VERTEX";
 const std::string SEQEND = "SEQEND";
 
+struct Index {
+  std::string type;
+  unsigned long index;
+};
+
 class DXFConverter {
 private:
   std::string m_input;
@@ -33,6 +39,7 @@ private:
   std::vector<DXFCircle> m_circles;
   std::vector<DXFArc> m_arcs;
   std::vector<DXFPolyline> m_polylines;
+  std::vector<Index> m_index;
 
   std::vector<TopoDS_Shape> m_faces;
 
@@ -61,6 +68,16 @@ private:
 
   // Remove doubles
   void removeDoubles();
+
+  // Add line to wire builder
+  void addLineToWireBuilder(const DXFLine &, BRepBuilderAPI_MakeWire &) const;
+
+  // Add arc to wire builder
+  void addArcToWireBuilder(const DXFArc &, BRepBuilderAPI_MakeWire &) const;
+
+  // Add polyline to wire builder
+  void addPolylineToWireBuilder(const DXFPolyline &,
+                                BRepBuilderAPI_MakeWire &) const;
 
   // Process
   void process();
