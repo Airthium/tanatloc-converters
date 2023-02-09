@@ -2,7 +2,10 @@
 #define _DXF_POLYLINE_
 
 #include <algorithm>
+#include <fstream>
 #include <vector>
+
+#include <BRepBuilderAPI_MakeWire.hxx>
 
 #include "./Vertex.hpp"
 
@@ -10,42 +13,21 @@ class DXFPolyline {
 public:
   std::vector<DXFVertex> vertices;
 
-  // In X-Y
-  bool inXY() const {
-    bool res = true;
+  // Process
+  void process(std::ifstream &);
 
-    if (!vertices.size())
-      return res;
+  // Is empty
+  bool isEmpty() const;
 
-    float lastZ = vertices.at(0).z;
-    std::for_each(vertices.begin(), vertices.end(),
-                  [&lastZ, &res](const DXFVertex vertex) {
-                    if (vertex.z != lastZ)
-                      res = false;
-                  });
+  // Already exists
+  bool alreadyExists(const std::vector<DXFPolyline> &) const;
 
-    return res;
-  }
+  // Add to wire builder
+  void addToWireBuilder(BRepBuilderAPI_MakeWire &) const;
 
   // Operator ==
   friend bool operator==(const DXFPolyline &polyline1,
-                         const DXFPolyline &polyline2) {
-    bool res = true;
-
-    if (polyline1.vertices.size() != polyline2.vertices.size())
-      return false;
-
-    std::for_each(
-        polyline1.vertices.begin(), polyline1.vertices.end(),
-        [index = 0, &polyline2, &res](const DXFVertex vertex1) mutable {
-          if (!(vertex1 == polyline2.vertices.at(index)))
-            res = false;
-
-          index++;
-        });
-
-    return res;
-  }
+                         const DXFPolyline &polyline2);
 };
 
 #endif

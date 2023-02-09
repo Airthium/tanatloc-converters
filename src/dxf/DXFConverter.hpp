@@ -12,6 +12,7 @@
 #include "./lib/Circle.hpp"
 #include "./lib/Line.hpp"
 #include "./lib/Polyline.hpp"
+#include "./lib/Spline.hpp"
 
 const std::string TAG0 = "  0";
 const std::string TAG10 = " 10";
@@ -23,6 +24,13 @@ const std::string TAG31 = " 31";
 const std::string TAG40 = " 40";
 const std::string TAG50 = " 50";
 const std::string TAG51 = " 51";
+const std::string TAG71 = " 71";
+const std::string TAG72 = " 72";
+const std::string TAG73 = " 73";
+const std::string TAG74 = " 74";
+const std::string TAG210 = "210";
+const std::string TAG220 = "220";
+const std::string TAG230 = "230";
 const std::string VERTEX = "VERTEX";
 const std::string SEQEND = "SEQEND";
 
@@ -39,7 +47,10 @@ private:
   std::vector<DXFCircle> m_circles;
   std::vector<DXFArc> m_arcs;
   std::vector<DXFPolyline> m_polylines;
+  std::vector<DXFSpline> m_splines;
   std::vector<Index> m_index;
+
+  bool needReverse;
 
   std::vector<TopoDS_Shape> m_faces;
 
@@ -57,27 +68,14 @@ private:
   // Process arc
   void processArc(std::ifstream &);
 
-  // Process vertex
-  DXFVertex processVertex(std::ifstream &) const;
-
   // Process polyline
   void processPolyline(std::ifstream &);
 
+  // Process spline
+  void processSpline(std::ifstream &);
+
   // Available entities
   bool availableEntities() const;
-
-  // Remove doubles
-  void removeDoubles();
-
-  // Add line to wire builder
-  void addLineToWireBuilder(const DXFLine &, BRepBuilderAPI_MakeWire &) const;
-
-  // Add arc to wire builder
-  void addArcToWireBuilder(const DXFArc &, BRepBuilderAPI_MakeWire &) const;
-
-  // Add polyline to wire builder
-  void addPolylineToWireBuilder(const DXFPolyline &,
-                                BRepBuilderAPI_MakeWire &) const;
 
   // Process
   void process();

@@ -1,6 +1,11 @@
 #ifndef _DXF_LINE_
 #define _DXF_LINE_
 
+#include <fstream>
+#include <vector>
+
+#include <BRepBuilderAPI_MakeWire.hxx>
+
 class DXFLine {
 public:
   float x1 = 0.;
@@ -11,15 +16,23 @@ public:
   float y2 = 0.;
   float z2 = 0.;
 
+  // Process
+  void process(std::ifstream &);
+
+  // Is empty
+  bool isEmpty() const;
+
   // In X-Y
-  bool inXY() const { return this->z1 == this->z2; };
+  bool inXY() const;
+
+  // Already exists
+  bool alreadyExists(const std::vector<DXFLine> &) const;
+
+  // Add to wire builder
+  void addToWireBuilder(BRepBuilderAPI_MakeWire &) const;
 
   // Operator ==
-  friend bool operator==(const DXFLine &line1, const DXFLine &line2) {
-    return (line1.x1 == line2.x1) && (line1.y1 == line2.y1) &&
-           (line1.z1 == line2.z1) && (line1.x2 == line2.x2) &&
-           (line1.y2 == line2.y2) && (line1.z2 == line2.z2);
-  }
+  friend bool operator==(const DXFLine &line1, const DXFLine &line2);
 };
 
 #endif
