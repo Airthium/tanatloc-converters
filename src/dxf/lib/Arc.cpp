@@ -105,7 +105,7 @@ bool DXFArc::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
     Logger::WARNING("" + std::to_string(error));
   }
 
-  return true;
+  return needReverse;
 }
 
 /**
