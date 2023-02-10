@@ -207,20 +207,23 @@ if(COVERAGE)
     COMMAND make test
     COMMAND ./DXFToGLTF || true
     COMMAND ./DXFToGLTF ../test/assets/not_existing.dxf not_existing.glb not_existing.brep || true
-    COMMAND ./DXFToGLTF ../test/assets/pipe.dxf pipe.glb pipre.brep || true
-    COMMAND ./DXFToGLTF ../test/assets/circle.dxf circle.glb circle.brep || true
-    COMMAND ./DXFToGLTF ../test/assets/curved.dxf curved.glb curved.brep || true
+    COMMAND ./DXFToGLTF ../test/assets/pipe.dxf pipe.glb pipe.brep
+    COMMAND ./DXFToGLTF ../test/assets/circle.dxf circle.glb circle.brep
+    COMMAND ./DXFToGLTF ../test/assets/curved.dxf curved.glb curved.brep
+    COMMAND ./DXFToGLTF ../test/assets/square.dxf square.glb square.brep
+    COMMAND ./DXFToGLTF ../test/assets/square_hole.dxf square_hole.glb square_hole.brep
+    COMMAND ./DXFToGLTF ../test/assets/spline.dxf spline.glb spline.brep
     COMMAND ./GmshToGLTF || true
     COMMAND ./GmshToGLTF ../test/assets/not_existing.msh not_existing.glb || true
-    COMMAND ./GmshToGLTF ../test/assets/Cube.msh Cube.glb || true
+    COMMAND ./GmshToGLTF ../test/assets/Cube.msh Cube.glb
     COMMAND ./StepToGLTF || true
     COMMAND ./StepToGLTF ../test/assets/not_existing.step not_existing.glb not_existing.brep || true
-    COMMAND ./StepToGLTF ../test/assets/cube.step cube.glb cube.brep || true
+    COMMAND ./StepToGLTF ../test/assets/cube.step cube.glb cube.brep
     COMMAND ./VTUToGLTF || true
     COMMAND ./VTUToGLTF ../test/assets/not_existing.vtu not_existing || true
-    COMMAND ./VTUToGLTF ../test/assets/Result.vtu Result || true
-    COMMAND ./VTUToGLTF ../test/assets/Result2Pieces.vtu Result || true
-    COMMAND ./VTUToGLTF ../test/assets/Result_streamTracer.vtu Result || true
+    COMMAND ./VTUToGLTF ../test/assets/Result.vtu Result
+    COMMAND ./VTUToGLTF ../test/assets/Result2Pieces.vtu Result
+    COMMAND ./VTUToGLTF ../test/assets/Result_streamTracer.vtu Result
     COMMAND lcov --directory . -c -o report0.info
     COMMAND lcov --remove report0.info '/usr/include/*' '/usr/local/include/*' '/usr/lib/*' -o report.info
     COMMAND genhtml -o ../coverage -t "Converters coverage" report.info
