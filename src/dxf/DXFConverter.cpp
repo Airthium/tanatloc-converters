@@ -200,8 +200,6 @@ void DXFConverter::process() {
   std::vector<TopoDS_Wire> wires;
   auto wireBuilder = BRepBuilderAPI_MakeWire();
 
-  // this->needReverse = this->m_arcs.size() && this->m_arcs.size() % 2 == 0;
-
   Logger::DEBUG("  Loop index");
   std::for_each(this->m_index.begin(), this->m_index.end(),
                 [this, &wireBuilder](const Index &index) {
@@ -211,7 +209,9 @@ void DXFConverter::process() {
                     line.addToWireBuilder(wireBuilder);
                   } else if (type == "arc") {
                     auto arc = this->m_arcs.at(index.index);
-                    arc.addToWireBuilder(wireBuilder);
+                    if (arc.addToWireBuilder(wireBuilder)) {
+                      this->needReverse = true;
+                    }
                   } else if (type == "polyline") {
                     auto polyline = this->m_polylines.at(index.index);
                     polyline.addToWireBuilder(wireBuilder);

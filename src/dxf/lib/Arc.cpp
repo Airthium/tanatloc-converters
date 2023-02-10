@@ -76,8 +76,11 @@ bool DXFArc::alreadyExists(const std::vector<DXFArc> &arcs) const {
  * Add to wire builder
  * @param wireBuilder Wire builder
  */
-void DXFArc::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
+bool DXFArc::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
   Logger::DEBUG("ARC::addToWireBuilder");
+
+  bool needReverse = false;
+
   gp_Circ occCircle;
   gp_Pnt center(this->circle.x, this->circle.y, this->circle.z);
   occCircle.SetLocation(center);
@@ -85,6 +88,10 @@ void DXFArc::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
 
   GC_MakeArcOfCircle occArc(occCircle, 2. * M_PI * this->startAngle / 360.,
                             2. * M_PI * this->endAngle / 360., true);
+
+  if (this->endAngle < this->startAngle) {
+    needReverse = true;
+  }
 
   Handle(Geom_TrimmedCurve) curve = occArc.Value();
 
@@ -97,6 +104,8 @@ void DXFArc::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
     Logger::WARNING("ARC::addToWireBuilder error");
     Logger::WARNING("" + std::to_string(error));
   }
+
+  return true;
 }
 
 /**

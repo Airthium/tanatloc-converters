@@ -24,7 +24,7 @@ public:
   bool alreadyExists(const std::vector<DXFArc> &) const;
 
   // Add to wire builder
-  void addToWireBuilder(BRepBuilderAPI_MakeWire &) const;
+  bool addToWireBuilder(BRepBuilderAPI_MakeWire &) const;
 
   // Operator ==
   friend bool operator==(const DXFArc &arc1, const DXFArc &arc2);
