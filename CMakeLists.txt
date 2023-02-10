@@ -210,6 +210,7 @@ if(COVERAGE)
     COMMAND ./DXFToGLTF ../test/assets/pipe.dxf pipe.glb pipe.brep
     COMMAND ./DXFToGLTF ../test/assets/circle.dxf circle.glb circle.brep
     COMMAND ./DXFToGLTF ../test/assets/curved.dxf curved.glb curved.brep
+    COMMAND ./DXFToGLTF ../test/assets/curved_twice.dxf curved_twice.glb curved_twice.brep
     COMMAND ./DXFToGLTF ../test/assets/square.dxf square.glb square.brep
     COMMAND ./DXFToGLTF ../test/assets/square_hole.dxf square_hole.glb square_hole.brep
     COMMAND ./DXFToGLTF ../test/assets/spline.dxf spline.glb spline.brep

@@ -200,6 +200,8 @@ void DXFConverter::process() {
   std::vector<TopoDS_Wire> wires;
   auto wireBuilder = BRepBuilderAPI_MakeWire();
 
+  // this->needReverse = this->m_arcs.size() && this->m_arcs.size() % 2 == 0;
+
   Logger::DEBUG("  Loop index");
   std::for_each(this->m_index.begin(), this->m_index.end(),
                 [this, &wireBuilder](const Index &index) {
@@ -208,7 +210,6 @@ void DXFConverter::process() {
                     auto line = this->m_lines.at(index.index);
                     line.addToWireBuilder(wireBuilder);
                   } else if (type == "arc") {
-                    this->needReverse = true;
                     auto arc = this->m_arcs.at(index.index);
                     arc.addToWireBuilder(wireBuilder);
                   } else if (type == "polyline") {
@@ -233,25 +234,32 @@ void DXFConverter::process() {
     return;
   } else if (wiresSize == 1) {
     auto wire = wires.at(0);
+
+    // Reverse?
     if (this->needReverse)
       wire.Reverse();
 
     auto faceBuilder = BRepBuilderAPI_MakeFace(wire);
-
     TopoDS_Shape face = faceBuilder.Shape();
-
     this->m_faces.push_back(face);
   } else {
     auto wire = wires.at(0);
+
+    // Reverse?
     if (this->needReverse)
       wire.Reverse();
 
     auto faceBuilder = BRepBuilderAPI_MakeFace(wire);
 
+    // Faces loop
     for (size_t i = 1; i < wiresSize; ++i) {
       auto innerWire = wires.at(i);
-      if (!this->needReverse)
+
+      // Reverse?
+      if ((!this->needReverse && ((i + 1) % 2 == 0)) ||
+          (this->needReverse && (i % 2 == 0)))
         innerWire.Reverse();
+
       faceBuilder.Add(innerWire);
     }
 
