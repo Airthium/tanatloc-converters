@@ -196,8 +196,9 @@ void DXFSpline::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
     TopoDS_Edge edge = edgeBuilder.Edge();
 
     wireBuilder.Add(edge);
-    const auto error = wireBuilder.Error();
-    if (error != BRepBuilderAPI_WireDone) {
+
+    if (const auto error = wireBuilder.Error();
+        error != BRepBuilderAPI_WireDone) {
       Logger::WARNING("SPLINE::addToWireBuilder error");
       Logger::WARNING("" + std::to_string(error));
     }
