@@ -4,8 +4,7 @@
 
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeVertex.hxx>
-#include <Geom_BSplineCurve.hxx>
-#include <Geom_BezierCurve.hxx>
+#include <Geom2d_BSplineCurve.hxx>
 
 #include "./Defs.hpp"
 #include "./Utils.hpp"
@@ -126,39 +125,61 @@ bool DXFSpline::alreadyExists(const std::vector<DXFSpline> &splines) const {
  */
 void DXFSpline::addToWireBuilder(BRepBuilderAPI_MakeWire &wireBuilder) const {
   Logger::DEBUG("SPLINE::addToWireBuilder");
-  TColgp_Array1OfPnt poles(1, this->numberOfControlPoints);
-  TColStd_Array1OfReal weights(1, this->numberOfControlPoints);
-  TColStd_Array1OfReal knots(1, this->numberOfKnots);
-  TColStd_Array1OfInteger multiplicities(1, this->numberOfKnots);
+  TColgp_Array1OfPnt2d poles(1, this->numberOfControlPoints);
 
+  // Poles
   for (int i = 0; i < this->numberOfControlPoints; ++i) {
     DXFVertex vertex = this->controlPoints.at(i);
-    gp_Pnt controlPoint(vertex.x, vertex.y, vertex.z);
+    gp_Pnt2d controlPoint(vertex.x, vertex.y);
     poles.SetValue(i + 1, controlPoint);
-
-    weights.SetValue(i + 1, 1.);
   }
 
+  // Knots & multiplicity
+  int mutliplicity = 1;
+  std::vector<float> tmpKnots;
+  std::vector<int> tmpMultiplicities;
+  float last = this->knotsValues.at(0);
+  tmpKnots.push_back(last);
   for (int i = 0; i < this->numberOfKnots; ++i) {
     float knot = this->knotsValues.at(i);
-    knots.SetValue(i + 1, knot);
+    if (knot == last) {
+      mutliplicity++;
+    } else {
+      tmpMultiplicities.push_back(mutliplicity);
+      mutliplicity = 1;
 
-    multiplicities.SetValue(i + 1, 1.);
+      tmpKnots.push_back(knot);
+      last = knot;
+    }
   }
 
-  //   auto splineCurve = Geom_BSplineCurve(poles, weights, knots,
-  //   multiplicities, this->degree, false, false);
+  const auto knotsSize = (int)tmpKnots.size();
+  TColStd_Array1OfReal knots(1, knotsSize);
+  TColStd_Array1OfInteger multiplicities(1, knotsSize);
+  for (int i = 0; i < knotsSize; ++i) {
+    knots.SetValue(i + 1, tmpKnots.at(i));
 
-  auto splineCurve = Geom_BezierCurve(poles); // TODO replace by B-Spline
+    if (i == 0 || i == knotsSize - 1)
+      multiplicities.SetValue(i + 1, this->degree + 1);
+    else
+      multiplicities.SetValue(i + 1, tmpMultiplicities.at(i));
+  }
+
+  // Spline
+  auto splineCurve =
+      Geom2d_BSplineCurve(poles, knots, multiplicities, this->degree, false);
 
   const auto U1 = splineCurve.FirstParameter();
   const auto U2 = splineCurve.LastParameter();
 
+  // To wire builder
   int numberOfDisplay = this->numberOfControlPoints + 2;
   std::vector<gp_Pnt> vertices;
   for (int i = 0; i < numberOfDisplay; ++i) {
     const auto point = U1 + (U2 - U1) * (i / (numberOfDisplay - 1.));
-    vertices.push_back(splineCurve.Value(point));
+    gp_Pnt2d point2D = splineCurve.Value(point);
+    gp_Pnt point3D(point2D.X(), point2D.Y(), 0);
+    vertices.push_back(point3D);
   }
 
   for (int i = 0; i < numberOfDisplay - 1; ++i) {
