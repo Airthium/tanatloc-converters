@@ -214,6 +214,7 @@ if(COVERAGE)
     COMMAND ./DXFToGLTF ../test/assets/square.dxf square.glb square.brep
     COMMAND ./DXFToGLTF ../test/assets/square_hole.dxf square_hole.glb square_hole.brep
     COMMAND ./DXFToGLTF ../test/assets/spline.dxf spline.glb spline.brep
+    COMMAND ./DXFToGLTF ../test/assets/spline_twice.dxf spline_twice.glb spline_twice.brep
     COMMAND ./GmshToGLTF || true
     COMMAND ./GmshToGLTF ../test/assets/not_existing.msh not_existing.glb || true
     COMMAND ./GmshToGLTF ../test/assets/Cube.msh Cube.glb
