@@ -556,8 +556,8 @@ bool writeOne(const Result &result, const std::string &gltfFile) {
     return false;
   }
 
-  Logger::DISP("{ \"glb\": \"" + gltfFile + "\", \"name\": \"" + result.name +
-               "\"}");
+  Logger::DISP(R"({ "glb": ")" + gltfFile + R"(", "name": ")" + result.name +
+               R"(" })");
 
   return true;
 }
