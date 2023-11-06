@@ -61,7 +61,6 @@ TopoDS_Compound MainDocument::getCompound() const {
  * @return Color
  */
 Quantity_Color MainDocument::getShapeColor(const TopoDS_Shape &shape) const {
-
   Quantity_Color color;
   this->m_colorTool->GetColor(shape, XCAFDoc_ColorSurf, color);
 

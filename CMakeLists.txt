@@ -96,6 +96,15 @@ set(StepToGLTFSOURCE
   ${UTILS_SOURCE}
 )
 
+# StepSplit
+set(StepSplitSOURCE
+  src/StepSplit.cpp
+  ${GEOMETRY_SOURCE}
+  ${LOGGER_SOURCE}
+  ${OCC_SOURCE}
+  ${UTILS_SOURCE}
+)
+
 # GmshToGLTF
 set(GmshToGLTFSOURCE
   src/GmshToGLTF.cpp
@@ -122,6 +131,9 @@ add_executable(DXFToGLTF ${DXFToGLTFSOURCE})
 # StepToGLTF
 add_executable(StepToGLTF ${StepToGLTFSOURCE})
 
+# StepSplit
+add_executable(StepSplit ${StepSplitSOURCE})
+
 # GmshToGLTF
 add_executable(GmshToGLTF ${GmshToGLTFSOURCE})
 
@@ -129,7 +141,7 @@ add_executable(GmshToGLTF ${GmshToGLTFSOURCE})
 add_executable(VTUToGLTF ${VTUToGLTFSOURCE})
 
 # # Install
-install(TARGETS DXFToGLTF StepToGLTF GmshToGLTF VTUToGLTF)
+install(TARGETS DXFToGLTF StepToGLTF StepSplit GmshToGLTF VTUToGLTF)
 
 # # Tests
 include(CTest)
@@ -221,6 +233,9 @@ if(COVERAGE)
     COMMAND ./StepToGLTF || true
     COMMAND ./StepToGLTF ../test/assets/not_existing.step not_existing.glb not_existing.brep || true
     COMMAND ./StepToGLTF ../test/assets/cube.step cube.glb cube.brep
+    COMMAND ./StepSplit || true
+    COMMAND ./StepSplit ../test/assets/not_existing.step || true
+    COMMAND ./StepSplit ../test/assets/cube.step
     COMMAND ./VTUToGLTF || true
     COMMAND ./VTUToGLTF ../test/assets/not_existing.vtu not_existing || true
     COMMAND ./VTUToGLTF ../test/assets/Result.vtu Result

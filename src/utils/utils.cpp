@@ -187,4 +187,15 @@ std::vector<double> minMax(const std::vector<double> &values) {
   return {min, max};
 }
 
+/**
+ * Remove file extension
+ * @param str String
+ * @return std::string String without extension
+ */
+std::string removeExtension(const std::string &str) {
+  std::string::size_type dotIndex = str.rfind('.', str.length());
+
+  return str.substr(0, dotIndex);
+}
+
 } // namespace Utils

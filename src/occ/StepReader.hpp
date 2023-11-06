@@ -17,6 +17,7 @@ public:
   // Read
   bool read() const;
 
+  Handle(TDocStd_Document) getDocument() const;
   TopoDS_Compound getCompound() const;
   Quantity_Color getShapeColor(const TopoDS_Shape &shape) const;
 };
