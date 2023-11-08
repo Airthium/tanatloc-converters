@@ -4,6 +4,7 @@
 build
 
 # Tests
+test/assets/cube_1.stp
 test/assets/Cube
 
 # Coverage
