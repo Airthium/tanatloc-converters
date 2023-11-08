@@ -4,13 +4,11 @@
 
 #include "makePipe.hpp"
 #include <BRepBndLib.hxx>
+#include <BRepLib_ToolTriangulatedShape.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
-#include <Poly_Connect.hxx>
 #include <Poly_Triangulation.hxx>
-#include <StdPrs_ToolTriangulatedShape.hxx>
-#include <TColgp_Array1OfDir.hxx>
 #include <TopoDS.hxx>
 
 #include "../logger/Logger.hpp"
@@ -75,7 +73,6 @@ FaceMesh Triangulation::triangulateFace(const TopoDS_Shape &face) const {
     Logger::ERROR("Null triangulation");
     return FaceMesh();
   }
-  Poly_Connect pc(triangulation);
 
   // Vertices
   const uint nbNodes = triangulation->NbNodes();
@@ -92,10 +89,11 @@ FaceMesh Triangulation::triangulateFace(const TopoDS_Shape &face) const {
   }
 
   // Normals
-  TColgp_Array1OfDir normals(1, triangulation->NbNodes());
-  StdPrs_ToolTriangulatedShape::Normal(TopoDS::Face(face), pc, normals);
+  Handle(Poly_Triangulation) pc(triangulation);
+  BRepLib_ToolTriangulatedShape::ComputeNormals(TopoDS::Face(face), pc);
   for (i = 1; i <= nbNodes; ++i) {
-    d = normals(i).Transformed(location.Transformation());
+    gp_Dir normal = pc->Normal(i);
+    d = normal.Transformed(location.Transformation());
     faceMesh.normals.emplace_back(d.X(), d.Y(), d.Z());
   }
 
