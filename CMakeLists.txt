@@ -52,6 +52,10 @@ link_libraries(${VTK_LIBS} ${OCC_LIBS} ${LIBUUID_LIBS})
 # TinyGLTF
 find_package(TinyGLTF REQUIRED)
 
+if(TinyGLTF_FOUND)
+  include_directories(${TinyGLTF_INCLUDE_DIR})
+endif(TinyGLTF_FOUND)
+
 # # Libraries
 # DXF
 AUX_SOURCE_DIRECTORY(src/dxf DXF_SOURCE)
